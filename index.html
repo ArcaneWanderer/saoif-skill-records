@@ -1,0 +1,33 @@
+<meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+<meta content="utf-8" http-equiv="encoding">
+<html>
+    <head>
+        <title>SAOIF Skill Records</title>
+        <link rel="icon" href="http://localhost:5000/img/favicon.ico">
+        <link rel="stylesheet" href="http://localhost:5000/css/style.css">
+    </head>
+
+    <body>
+        <div id="app">
+            <select id="card-select" v-model="selected">
+                <option v-for="(card, index) in cardOptions" v-bind:value="card">
+                    {{ "#" + ++index + " " + card.data }}
+                </option>
+            </select>
+
+            <button id="load-sr-button" v-on:click="loadSkillRecord">Load card info</button>
+            
+            <br>
+
+            <div class="card-group" v-for="index in 10" :key="index">
+            <!-- <div class="card-group" v-for="card in cardOptions"> -->
+                <!-- <skill-record-info v-bind:card-id="card.card_masterid"></skill-record-info> -->
+                <skill-record-info v-bind:card-id="cardOptions[index-1].card_masterid"></skill-record-info>
+            </div>
+            <!-- <skill-record-info id="currentCard" v-bind:card-id="selected.evolution_card_masterid"></skill-record-info> -->
+        </div>
+
+        <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+        <script src="http://localhost:5000/js/script.js"></script>
+    </body>
+</html>

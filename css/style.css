@@ -43,6 +43,8 @@ body {
 
 .card-group {
     display: inline-block;
+    margin: 0;
+    vertical-align: top;
 }
 
 .card {
@@ -64,7 +66,7 @@ body {
     position: absolute;
     top: 0;
     z-index: 1000;
-    display: none;
+    /* display: none; */
 }
 
 .card-info {

@@ -10,7 +10,7 @@ Vue.component('skill-record-info', {
     data: function () {
         return {
             skillRecord: {'cardInfo': {}},
-            level: 80
+            level: 1
         }
     },
     methods: {
@@ -31,6 +31,27 @@ Vue.component('skill-record-info', {
             
             console.log(description);
 
+            description = this.mapDescription(description);
+
+            this.skillRecord.skillDescription = description;
+            switch (this.skillRecord.cardInfo.max_rarity) {
+                case 5:
+                    this.level = 80;
+                    break;
+                case 4:
+                    this.level = 70;
+                    break;
+                case 3:
+                    this.level = 60;
+                    break;
+                case 2:
+                    this.level = 50;
+                    break;
+            }
+        },
+        mapDescription: function (rawDescription) {
+            description = rawDescription;
+            
             if (this.skillRecord.cardInfo.type == 2) {
                 if (description.includes('%BuffRate0%')) {
                     for (var i = 0; i < this.skillRecord.passiveBuffs.length; i++) {
@@ -119,14 +140,14 @@ Vue.component('skill-record-info', {
                         description = description.replace('%BuffConst%', (buff.buffEffects[0].slope * (buff.buff_level + this.level) + buff.buffEffects[0].intercept));
                     }
                 }
-
+    
                 // if (this.skillRecord.activeBuffs.length > 0) {
                 //     description = description.replace('%BuffTime%', this.skillRecord.activeBuffs[0].buff_time);
                 // }
             }
 
-            this.skillRecord.skillDescription = description;
-        }
+            return description;
+        },
     },
     watch: {
         cardId: function() {
@@ -149,17 +170,16 @@ Vue.component('skill-record-info', {
                 </div>
                 <p class="card-title">{{ skillRecord.cardName }}</p>
                 <div class="card-rarity">
-                    <span v-for="index in skillRecord.cardInfo.rarity" :key="index"><img width=25em height=25em src="http://localhost:5000/img/UI_icon_status_rare_on.png"></span>
-                    <span v-if="skillRecord.cardInfo.evolution_card_masterid > 0"><img width=25em height=25em src="http://localhost:5000/img/UI_icon_status_rare_off.png"></span>
+                    <span v-for="index in skillRecord.cardInfo.rarity" :key="index"><img width=25em height=25em src="http://localhost:5000/img/UI_icon_status_rare_on.png"></span><span v-if="skillRecord.cardInfo.evolution_card_masterid > 0"><img width=25em height=25em src="http://localhost:5000/img/UI_icon_status_rare_off.png"></span>
                 </div>
                 <div class="card-img">
-                    <img v-if="skillRecord.cardInfo.rarity == 1 && skillRecord.cardInfo.evolution_card_masterid == 0" src="http://localhost:5000/img/Base_Frame/sr_base_1_2.png">
+                    <img v-if="skillRecord.cardInfo.rarity == 2 && skillRecord.cardInfo.evolution_card_masterid == 0" src="http://localhost:5000/img/Base_Frame/sr_base_1_2.png">
                     <img v-else-if="skillRecord.cardInfo.rarity == 1" src="http://localhost:5000/img/Base_Frame/sr_base_1_1.png">
-                    <img v-if="skillRecord.cardInfo.rarity == 2 && skillRecord.cardInfo.evolution_card_masterid == 0" src="http://localhost:5000/img/Base_Frame/sr_base_2_2.png">
+                    <img v-else-if="skillRecord.cardInfo.rarity == 3 && skillRecord.cardInfo.evolution_card_masterid == 0" src="http://localhost:5000/img/Base_Frame/sr_base_2_2.png">
                     <img v-else-if="skillRecord.cardInfo.rarity == 2" src="http://localhost:5000/img/Base_Frame/sr_base_2_1.png">
-                    <img v-if="skillRecord.cardInfo.rarity == 2 && skillRecord.cardInfo.evolution_card_masterid == 0" src="http://localhost:5000/img/Base_Frame/sr_base_3_2.png">
+                    <img v-else-if="skillRecord.cardInfo.rarity == 4 && skillRecord.cardInfo.evolution_card_masterid == 0" src="http://localhost:5000/img/Base_Frame/sr_base_3_2.png">
                     <img v-else-if="skillRecord.cardInfo.rarity == 3" src="http://localhost:5000/img/Base_Frame/sr_base_3_1.png">
-                    <img v-if="skillRecord.cardInfo.rarity == 2 && skillRecord.cardInfo.evolution_card_masterid == 0" src="http://localhost:5000/img/Base_Frame/sr_base_4_2.png">
+                    <img v-else-if="skillRecord.cardInfo.rarity == 5 && skillRecord.cardInfo.evolution_card_masterid == 0" src="http://localhost:5000/img/Base_Frame/sr_base_4_2.png">
                     <img v-else-if="skillRecord.cardInfo.rarity == 4" src="http://localhost:5000/img/Base_Frame/sr_base_4_1.png">
                     <img v-bind:src="'https://raw.githubusercontent.com/Nayuta-Kani/SAOIF-Skill-Records-Database/master/srimages/sr_icon_l_' + (skillRecord.cardInfo.evolution_card_masterid > 0 ? skillRecord.cardInfo.evolution_card_masterid : skillRecord.cardInfo.card_masterid) + '.png'">
                 </div>

@@ -26,15 +26,12 @@ Vue.component('skill-record-info', {
             console.log(this.skillRecord);
 
             var description = this.skillRecord.skillDescription;
-            description = description.replace(/\\n/g, '<br>');
-            description = description.replace('%SkillDamage%', this.skillRecord.skillInfo['bAtkRate'] / 100 + (this.level-1) + '%');
-            
             console.log(description);
 
             description = this.mapDescription(description);
 
             this.skillRecord.skillDescription = description;
-            switch (this.skillRecord.cardInfo.max_rarity) {
+            switch (this.skillRecord.cardInfo.rarity) {
                 case 5:
                     this.level = 80;
                     break;
@@ -47,103 +44,82 @@ Vue.component('skill-record-info', {
                 case 2:
                     this.level = 50;
                     break;
+                case 1:
+                    this.level = 40;
+                    break;
             }
         },
         mapDescription: function (rawDescription) {
             description = rawDescription;
             
+            description = description.replace(/\\n/g, '<br>');
+            description = description.replace('%SkillDamage%', this.skillRecord.skillInfo['bAtkRate'] / 100 + (this.level-1) + '%');
+
+            var buffTags = description.match(/\%Buff.+?\%/g);
+
+            if (buffTags == null) {
+                return description;
+            }
+
+            console.log(buffTags);
+
+            var buffs = [];
+            var buffList = [];
+            var durations = [];
+
+            // If the skill record is a passive/ability-type
             if (this.skillRecord.cardInfo.type == 2) {
-                if (description.includes('%BuffRate0%')) {
-                    for (var i = 0; i < this.skillRecord.passiveBuffs.length; i++) {
-                        var buff = this.skillRecord.passiveBuffs[i];
-                        description = description.replace('%BuffRate' + i + '%', (buff.slope * this.level + buff.intercept) / 100 + '%');
-                    }
-                } else {
-                    for (var i = 0; i < this.skillRecord.passiveBuffs.length; i++) {
-                        var buff = this.skillRecord.passiveBuffs[i];
-                        if (!buff.define_name.includes('Rate') && this.skillRecord.passiveBuffs.length > 1) {
-                            continue;
-                        }
-                        description = description.replace('%BuffRate%', (buff.slope * this.level + buff.intercept) / 100 + '%');
-                    }
-                }
-                
-                // for (var i = 0; i < this.skillRecord.passiveBuffs.length; i++) {
-                //     var buff = this.skillRecord.passiveBuffs[i];
-                //     if (buff.define_name.includes('Rate')) {
-                //         continue;
-                //     }
-                //     description = description.replace('%BuffConst%', (buff.slope * this.level + buff.intercept));
-                // }
-                
-                if (description.includes('%BuffConst0%')) {
-                    var j = 0;
-                    for (var i = 0; i < this.skillRecord.passiveBuffs.length; i++) {
-                        var buff = this.skillRecord.passiveBuffs[i];
-                        if (buff.define_name.includes('Rate') || buff.define_name.includes('Buff')) {
-                            continue;
-                        }
-                        description = description.replace('%BuffConst' + i + '%', (buff.slope * this.level + buff.intercept));
-                        j++;
-                    }
-                } else if (this.skillRecord.passiveBuffs.length > 0) {
-                    for (var i = 0; i < this.skillRecord.passiveBuffs.length; i++) {
-                        var buff = this.skillRecord.passiveBuffs[i];
-                        if (buff.define_name.includes('Rate')) {
-                            continue;
-                        }
-                            description = description.replace('%BuffConst%', (buff.slope * this.level + buff.intercept));
-                    }
-                }
-                
+                buffList = this.skillRecord.passiveBuffs;
             } else {
-                if (description.includes('%BuffRate0%')) {
-                    for (var i = 0; i < this.skillRecord.activeBuffs.length; i++) {
-                        var buff = this.skillRecord.activeBuffs[i];
-                        description = description.replace('%BuffRate' + i + '%', (buff.buffEffects[0].slope * (buff.buff_level + this.level) + buff.buffEffects[0].intercept) / 100 + '%');
-                    }
+                buffList = this.skillRecord.activeBuffs;
+            }
+
+            for (var i = 0; i < buffList.length; i++) {
+                var buff = buffList[i];
+                buffs.push(buff);
+
+                if (buff.hasOwnProperty('buff_time')) {
+                    durations.push(buff.buff_time);
+                }
+            }
+            
+            console.log(buffs.length);
+
+            var buffMappings = {};
+
+            while (buffTags.length > 0) {
+                var buffTag = buffTags.shift();
+                var value = -1;
+
+                if (buffTag.includes('BuffTime')) {
+                    value = durations.shift();
                 } else {
-                    for (var i = 0; i < this.skillRecord.activeBuffs.length; i++) {
-                        var buff = this.skillRecord.activeBuffs[i];
-                        if (!buff.define_name.includes('Rate') && this.skillRecord.passiveBuffs.length > 1) {
-                            continue;
-                        }
-                        description = description.replace('%BuffRate%', (buff.buffEffects[0].slope * (buff.buff_level + this.level) + buff.buffEffects[0].intercept) / 100 + '%');
+                    if (buffList.length <= 0) {
+                        break;
+                    }
+                    var buff = buffList.shift();
+
+                    if (buff.hasOwnProperty('buffEffects')) {
+                        value = buff.buffEffects[0].slope * (buff.buff_level + this.level) + buff.buffEffects[0].intercept;
+                    } else {
+                        value = buff.slope * this.level + buff.intercept;
+                    }
+
+                    if (value < 0) {
+                        value *= -1;
+                    }
+
+                    if (buffTag.includes('BuffRate')) {
+                        value = value / 100 + '%';
                     }
                 }
-                
-                if (description.includes('%BuffTime0%')) {
-                    for (var i = 0; i < this.skillRecord.activeBuffs.length; i++) {
-                        var buff = this.skillRecord.activeBuffs[i];
-                        description = description.replace('%BuffTime' + i + '%', this.skillRecord.activeBuffs[i].buff_time);
-                    }
-                } else if (this.skillRecord.activeBuffs.length > 0) {
-                        description = description.replace('%BuffTime%', this.skillRecord.activeBuffs[0].buff_time);
-                }
-                
-                if (description.includes('%BuffConst0%')) {
-                    var j = 0;
-                    for (var i = 0; i < this.skillRecord.activeBuffs.length; i++) {
-                        var buff = this.skillRecord.activeBuffs[i];
-                        if (buff.define_name.includes('Rate')) {
-                            continue;
-                        }
-                        description = description.replace('%BuffConst' + j + '%', (buff.buffEffects[0].slope * (buff.buff_level + this.level) + buff.buffEffects[0].intercept));
-                        j++;
-                    }
-                } else if (this.skillRecord.activeBuffs.length > 0) {
-                    for (var i = 0; i < this.skillRecord.activeBuffs.length; i++) {
-                        var buff = this.skillRecord.activeBuffs[i];
-                        if (buff.define_name.includes('Rate')) {
-                            continue;
-                        }
-                        description = description.replace('%BuffConst%', (buff.buffEffects[0].slope * (buff.buff_level + this.level) + buff.buffEffects[0].intercept));
-                    }
-                }
-    
-                // if (this.skillRecord.activeBuffs.length > 0) {
-                //     description = description.replace('%BuffTime%', this.skillRecord.activeBuffs[0].buff_time);
-                // }
+
+                buffMappings[buffTag] = value;
+            }
+
+            for (var tag in buffMappings) {
+                console.log(tag, buffMappings[tag]);
+                description = description.replace(new RegExp(tag, "g"), buffMappings[tag]);
             }
 
             return description;

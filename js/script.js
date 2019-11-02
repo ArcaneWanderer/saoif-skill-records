@@ -29,25 +29,7 @@ Vue.component('skill-record-info', {
             console.log(description);
 
             description = this.mapDescription(description);
-
             this.skillRecord.skillDescription = description;
-            switch (this.skillRecord.cardInfo.rarity) {
-                case 5:
-                    this.level = 80;
-                    break;
-                case 4:
-                    this.level = 70;
-                    break;
-                case 3:
-                    this.level = 60;
-                    break;
-                case 2:
-                    this.level = 50;
-                    break;
-                case 1:
-                    this.level = 40;
-                    break;
-            }
         },
         mapDescription: function (rawDescription) {
             description = rawDescription;
@@ -133,9 +115,27 @@ Vue.component('skill-record-info', {
             this.updateSkillRecord();
         }
     },
-    mounted: function() {
+    created: function() {
         // this.skillRecord = await buildSkillRecordInfo(this.cardId);
         this.updateSkillRecord();
+
+        switch (this.skillRecord.cardInfo.rarity) {
+            case 5:
+                this.level = 80;
+                break;
+            case 4:
+                this.level = 70;
+                break;
+            case 3:
+                this.level = 60;
+                break;
+            case 2:
+                this.level = 50;
+                break;
+            case 1:
+                this.level = 40;
+                break;
+        }
     },
     template: `
         <div class="card">
@@ -161,6 +161,7 @@ Vue.component('skill-record-info', {
                 </div>
                 <div class="card-details">
                     <p class="skill-name">{{ skillRecord.skillName }}</p>
+                    <span class="skill-level">Lv. {{ level }}</span>
                     <p class="skill-description" v-html="skillRecord.skillDescription"></p>
                     <div class="card-id-text">
                         <span>#{{ skillRecord.cardInfo.card_masterid }}</span>
@@ -168,7 +169,7 @@ Vue.component('skill-record-info', {
                 </div>
             </div>
             <div class="card-actions">
-                <button @click="toggleTransform">⭐</button>
+                <button @click="toggleTransform">Toggle transform</button>
             </div>
         </div>
     `

@@ -95,6 +95,7 @@ body {
 }
 
 .card-title {
+    font-size: 1.25em;
     color: #2b2525;
 }
 
@@ -133,6 +134,14 @@ body {
     margin: 0 auto; */
     padding: 0 1em;
     /* white-space: pre-wrap; */
+}
+
+.skill-name {
+    font-size: 1.1em;
+}
+
+.skill-level {
+    font-family: 'Kakugo';
 }
 
 .skill-description {

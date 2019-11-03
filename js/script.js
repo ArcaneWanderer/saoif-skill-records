@@ -139,7 +139,7 @@ Vue.component('skill-record-info', {
     },
     template: `
         <div class="card">
-            <div><input v-model="level"></div><br>
+            <div><input type="number" v-model="level" placeholder="Level" min="1" max="100"></div><br>
             <div class="card-info">
                 <div class="card-type">
                     <span>{{ skillRecord.cardInfo.type == 1 ? "Sword Skill" : "Ability" }}</span>
@@ -160,8 +160,10 @@ Vue.component('skill-record-info', {
                     <img v-bind:src="'https://raw.githubusercontent.com/Nayuta-Kani/SAOIF-Skill-Records-Database/master/srimages/sr_icon_l_' + (skillRecord.cardInfo.evolution_card_masterid > 0 ? skillRecord.cardInfo.evolution_card_masterid : skillRecord.cardInfo.card_masterid) + '.png'">
                 </div>
                 <div class="card-details">
-                    <p class="skill-name">{{ skillRecord.skillName }}</p>
-                    <span class="skill-level">Lv. {{ level }}</span>
+                    <p class="skill-name">
+                        {{ skillRecord.skillName }}
+                        <span class="skill-level">Lv. {{ level }}</span>
+                    </p>
                     <p class="skill-description" v-html="skillRecord.skillDescription"></p>
                     <div class="card-id-text">
                         <span>#{{ skillRecord.cardInfo.card_masterid }}</span>

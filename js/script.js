@@ -32,30 +32,39 @@ Vue.component('skill-record-info', {
             this.skillRecord.skillDescription = description;
         },
         mapDescription: function (rawDescription) {
-            description = rawDescription;
+            description = rawDescription; // The description template containing buff tags and no values
             
+            // Replace line breaks with HTML line breaks <br>
             description = description.replace(/\\n/g, '<br>');
+
+            // Immediately compute and map the skill damage multiplier
             description = description.replace('%SkillDamage%', this.skillRecord.skillInfo['bAtkRate'] / 100 + (this.level-1) + '%');
 
+            // Get all the buff tags and store them in an array in the order that they are found
+            // e.g. ["%BuffRate%", "%BuffTime%"]
             var buffTags = description.match(/\%Buff.+?\%/g);
 
+            // If there are no buff tags, no need to map anything else
             if (buffTags == null) {
                 return description;
             }
 
             console.log(buffTags);
 
-            var buffs = [];
-            var buffList = [];
-            var durations = [];
+            var buffs = []; // The buffs taken from buffList and stored in a Queue data structure
+            var buffList = []; // Contains a reference to the buffs according to the database format
+            var durations = []; // The durations of each skill record as a Queue data structure
 
-            // If the skill record is a passive/ability-type
+            // If the skill record is a passive/ability-type (i.e. type == 2)
             if (this.skillRecord.cardInfo.type == 2) {
-                buffList = this.skillRecord.passiveBuffs;
+                buffList = this.skillRecord.passiveBuffs.reverse();
             } else {
-                buffList = this.skillRecord.activeBuffs;
+                buffList = this.skillRecord.activeBuffs.reverse();
             }
 
+            // Do one pass across the list of buffs and store them in a different array
+            // Also store the durations of each buff
+            console.log(buffList);
             for (var i = 0; i < buffList.length; i++) {
                 var buff = buffList[i];
                 buffs.push(buff);
@@ -64,15 +73,21 @@ Vue.component('skill-record-info', {
                     durations.push(buff.buff_time);
                 }
             }
+            console.log(buffList);
             
             console.log(buffs.length);
 
+            // e.g. {"%BuffRate%": "23%"}
+            // The stored value is already the computed one based on level ^
             var buffMappings = {};
 
+            // While there are still buff tags to be processed
+            // Treat buffTags as a Queue data structure
             while (buffTags.length > 0) {
-                var buffTag = buffTags.shift();
-                var value = -1;
+                var buffTag = buffTags.shift(); // Dequeue
+                var value = -1; // The computed value to be added in buffMappings
 
+                // If the buff tag is BuffTime, the value is from the durations queue
                 if (buffTag.includes('BuffTime')) {
                     value = durations.shift();
                 } else {
@@ -81,24 +96,32 @@ Vue.component('skill-record-info', {
                     }
                     var buff = buffList.shift();
 
+                    // If it has buffEffects, then the buff is from an active skill
+                    // Data from active and passive skills are stored differently for some reason
                     if (buff.hasOwnProperty('buffEffects')) {
                         value = buff.buffEffects[0].slope * (buff.buff_level + this.level) + buff.buffEffects[0].intercept;
                     } else {
                         value = buff.slope * this.level + buff.intercept;
                     }
 
+                    // If the value is negative, make it positive
+                    // The description already has the "-" so no need for the actual value to be negative
                     if (value < 0) {
                         value *= -1;
                     }
 
+                    // If it's a rate/percentage, multiply by 100 and add a %
                     if (buffTag.includes('BuffRate')) {
                         value = value / 100 + '%';
                     }
                 }
 
+                // Store the buffTag and value in the mapping
+                // e.g. {"%BuffRate%": "23%"}
                 buffMappings[buffTag] = value;
             }
 
+            // The replacement via mapping proper
             for (var tag in buffMappings) {
                 console.log(tag, buffMappings[tag]);
                 description = description.replace(new RegExp(tag, "g"), buffMappings[tag]);

@@ -14,6 +14,7 @@
 // });
 
 const express = require('express');
+const path = require('path');
 
 const app = express();
 const hostname = 'localhost';
@@ -22,5 +23,10 @@ const port = 5000;
 app.get('/', (req, res) => {
     res.sendFile('index.html', { root: __dirname });
 })
+
+app.use('/js', express.static(path.join(__dirname, '/js')));
+app.use('/css', express.static(path.join(__dirname, '/css')));
+app.use('/img', express.static(path.join(__dirname, '/img')));
+app.use('/font', express.static(path.join(__dirname, '/font')));
 
 app.listen(port, () => console.log(`Server running at http://${hostname}:${port}/`));

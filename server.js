@@ -4,8 +4,8 @@ const sqlite3 = require('sqlite3').verbose();
 // const cors = require('cors');
 
 const app = express();
-const SERVER_HOST = process.env.IP || 'localhost';
-const SERVER_PORT = process.env.PORT || 8080;
+const SERVER_HOST = process.env.OPENSHIFT_NODEJS_IP || 'localhost';
+const SERVER_PORT = process.env.OPENSHIFT_NODEJS_PORT || 8080;
 
 const JP_DATABASE = 'db/gamemaster.db3';
 const GLOBAL_DATABASE = 'db/gamemaster_fc.db3';
@@ -243,4 +243,4 @@ function closeConnection(databaseObject) {
     });
 }
 
-app.listen(SERVER_PORT, () => console.log(`Server running at http://${SERVER_HOST}:${SERVER_PORT}/`));
+app.listen(OPENSHIFT_NODEJS_PORT, OPENSHIFT_NODEJS_IP, () => console.log(`Server running at http://${OPENSHIFT_NODEJS_IP}:${OPENSHIFT_NODEJS_PORT}/`));

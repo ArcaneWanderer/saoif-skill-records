@@ -1,6 +1,3 @@
-const SERVER_HOST = process.env.IP || 'localhost';
-const SERVER_PORT = process.env.PORT || 8080;
-const HOST_URL = SERVER_HOST + ':' + SERVER_PORT;
 
 export async function loadCardOptions() {
     return new Promise(function(resolve, reject) {

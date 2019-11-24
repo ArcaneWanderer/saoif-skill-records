@@ -1,4 +1,4 @@
-const SERVER_HOST = 'localhost';
+const SERVER_HOST = process.env.IP || 'localhost';
 const SERVER_PORT = process.env.PORT || 8080;
 const HOST_URL = SERVER_HOST + ':' + SERVER_PORT;
 

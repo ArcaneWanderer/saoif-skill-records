@@ -1,10 +1,11 @@
 const express = require('express');
 const path = require('path');
 const sqlite3 = require('sqlite3').verbose();
+// const cors = require('cors');
 
 const app = express();
-const hostname = 'localhost';
-const port = 5000;
+const SERVER_HOST = 'localhost';
+const SERVER_PORT = process.env.PORT || 8080;
 
 const JP_DATABASE = 'db/gamemaster.db3';
 const GLOBAL_DATABASE = 'db/gamemaster_fc.db3';
@@ -13,15 +14,26 @@ const TEXT_DATABASE_EN = 'db/en/textmaster.db3';
 const TEXT_DATABASE_KO = 'db/ko/textmaster.db3';
 const TEXT_DATABASE_TW = 'db/zh/textmaster.db3';
 
+// app.use(cors());
+
+app.use(express.static(path.join(__dirname, 'build')));
+
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname + '/index.html'));
-})
+    res.sendFile(path.join(__dirname, 'build', 'index.html'));
+});
 
-app.use('/js', express.static(path.join(__dirname, '/js')));
-app.use('/css', express.static(path.join(__dirname, '/css')));
-app.use('/img', express.static(path.join(__dirname, '/img')));
-app.use('/font', express.static(path.join(__dirname, '/font')));
+// app.use('/js', express.static(path.join(__dirname, 'build', 'static', 'js')));
+// app.use('/css', express.static(path.join(__dirname, 'build', '/css')));
+// app.use('/img', express.static(path.join(__dirname, 'build', '/img')));
+// app.use('/font', express.static(path.join(__dirname, 'build', '/font')));
 
+app.get('/sr/:cardId', (req, res) => {
+    var cardId = req.params.cardId;
+    // var db = createConnection(JP_DATABASE);
+    // var sql = `SELECT *
+    //             FROM MCardMasters
+    //             WHERE card_masterid = '${cardId}'`;
+});
 
 app.get('/card', (req, res) => {
     var db = createConnection(JP_DATABASE);
@@ -231,4 +243,4 @@ function closeConnection(databaseObject) {
     });
 }
 
-app.listen(port, () => console.log(`Server running at http://${hostname}:${port}/`));
+app.listen(SERVER_PORT, () => console.log(`Server running at http://${SERVER_HOST}:${SERVER_PORT}/`));

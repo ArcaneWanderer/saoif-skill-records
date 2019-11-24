@@ -4,7 +4,7 @@ const sqlite3 = require('sqlite3').verbose();
 // const cors = require('cors');
 
 const app = express();
-const SERVER_HOST = process.env.OPENSHIFT_NODEJS_IP || 'localhost';
+const SERVER_HOST = process.env.OPENSHIFT_NODEJS_IP || '0.0.0.0';
 const SERVER_PORT = process.env.OPENSHIFT_NODEJS_PORT || 8080;
 
 const JP_DATABASE = 'db/gamemaster.db3';

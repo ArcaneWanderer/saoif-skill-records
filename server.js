@@ -243,4 +243,4 @@ function closeConnection(databaseObject) {
     });
 }
 
-app.listen(OPENSHIFT_NODEJS_PORT, OPENSHIFT_NODEJS_IP, () => console.log(`Server running at http://${OPENSHIFT_NODEJS_IP}:${OPENSHIFT_NODEJS_PORT}/`));
+app.listen(SERVER_PORT, SERVER_HOST, () => console.log(`Server running at http://${SERVER_HOST}:${SERVER_PORT}/`));

@@ -23,35 +23,42 @@ class SkillRecordGridItem extends React.Component {
             skillRecord: null
         };
 
-        this.updateSkillRecord().then(async () => {
-            var level = 1;
-            switch (this.state.skillRecord.cardInfo.rarity) {
-                case 5:
-                    level = 80;
-                    break;
-                case 4:
-                    level = 70;
-                    break;
-                case 3:
-                    level = 60;
-                    break;
-                case 2:
-                    level = 50;
-                    break;
-                case 1:
-                    level = 40;
-                    break;
-                default:
-                    level = 1;
-            }
-            
-            this.setState({
-                level: level
-            });
+        buildSkillRecordInfo(props.cardId).then((data) => {
+            this.initializeLevel(data);
+            this.updateSkillRecord();
         });
     }
 
-    componentDidUpdate() {
+    initializeLevel(skillRecord) {
+        var level = 1;
+        switch (skillRecord.cardInfo.rarity) {
+            case 5:
+                level = 80;
+                break;
+            case 4:
+                level = 70;
+                break;
+            case 3:
+                level = 60;
+                break;
+            case 2:
+                level = 50;
+                break;
+            case 1:
+                level = 40;
+                break;
+            default:
+                level = 1;
+        }
+        this.setState({ level: level });
+    }
+
+    componentWillReceiveProps(nextProps) {
+        this.setState({ cardId: nextProps.cardId, });
+        buildSkillRecordInfo(nextProps.cardId).then((data) => {
+            this.initializeLevel(data);
+            this.updateSkillRecord();
+        });
     }
 
     async updateSkillRecord() {
@@ -269,8 +276,9 @@ class SkillRecordGridItem extends React.Component {
                             { this.state.skillRecord.skillName }
                             <span className="skill-level">Lv. { this.state.level }</span>
                         </p>
-                        <p className="skill-description">
-                            { this.state.skillRecord.skillDescription }
+                        {/* <p className="skill-description" dangerouslySetInnerHTML={{ __html: this.state.skillRecord.skillDescription }}> */}
+                        <p className="skill-description" style={{ whiteSpace: 'pre-line' }}>
+                            {this.state.skillRecord.skillDescription }
                         </p>
                         <div className="card-id-text">
                             <span>#{ this.state.skillRecord.cardInfo.card_masterid }</span>

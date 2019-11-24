@@ -2,24 +2,23 @@ const SERVER_HOST = 'localhost';
 const SERVER_PORT = process.env.PORT || 8080;
 const HOST_URL = SERVER_HOST + ':' + SERVER_PORT;
 
-// async function loadCardOptions() {
-//     return new Promise(function(resolve, reject) {
-//         fetch(HOST_URL + '/card', {method: 'get'})
-//             .then(function(response) {
-//                 if (response.status !== 200) {
-//                     console.log('Looks like there was a problem. Status Code: ' + response.status);
-//                     return;
-//                 }
+export async function loadCardOptions() {
+    return new Promise(function(resolve, reject) {
+        fetch('/card', {method: 'get'})
+            .then(function(response) {
+                if (response.status !== 200) {
+                    console.log('Looks like there was a problem. Status Code: ' + response.status);
+                    return;
+                }
 
-//                 return response.json();
-//             }).then(function(data) {
-//                 app.cardOptions = data;
-//                 resolve(app.cardOptions);
-//             }).catch(function(err) {
-//                 console.log('Fetch Error :-S', err);
-//             });
-//     });
-// }
+                return response.json();
+            }).then(function(data) {
+                resolve(data);
+            }).catch(function(err) {
+                console.log('Fetch Error :-S', err);
+            });
+    });
+}
 
 async function loadCardInfo(cardId) {
     var card = '';

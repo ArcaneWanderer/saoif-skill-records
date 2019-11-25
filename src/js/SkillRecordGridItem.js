@@ -90,6 +90,11 @@ class SkillRecordGridItem extends React.Component {
 
     componentDidUpdate(prevProps) {
         if (prevProps.cardId != this.props.cardId) {
+            this.setState({ cardImageLoaded: false });
+            if (document.getElementById('card-image')) {
+                document.getElementById('card-image').style.display = 'none';
+            }
+            
             this.setState({ cardId: this.props.cardId }, () => {
                 buildSkillRecordInfo(this.props.cardId).then((data) => {
                     this.initializeLevel(data);
@@ -100,10 +105,6 @@ class SkillRecordGridItem extends React.Component {
     }
 
     updateSkillRecord() {
-        this.setState({ cardImageLoaded: false });
-        if (document.getElementById('card-image')) {
-            document.getElementById('card-image').style.display = 'none';
-        }
 
         new Promise((resolve, reject) => {
             buildSkillRecordInfo(this.state.cardId).then((data) => {

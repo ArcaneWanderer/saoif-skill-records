@@ -276,8 +276,7 @@ class SkillRecordGridItem extends React.Component {
                             { this.state.skillRecord.skillName }
                             <span className="skill-level">Lv. { this.state.level }</span>
                         </p>
-                        {/* <p className="skill-description" dangerouslySetInnerHTML={{ __html: this.state.skillRecord.skillDescription }}> */}
-                        <p className="skill-description" style={{ whiteSpace: 'pre-line' }}>
+                        <p className="skill-description">
                             {this.state.skillRecord.skillDescription }
                         </p>
                         <div className="card-id-text">

@@ -1,7 +1,6 @@
 const express = require('express');
 const path = require('path');
 const sqlite3 = require('sqlite3').verbose();
-// const cors = require('cors');
 
 const app = express();
 const SERVER_HOST = process.env.OPENSHIFT_NODEJS_IP || '0.0.0.0';
@@ -14,18 +13,11 @@ const TEXT_DATABASE_EN = 'db/en/textmaster.db3';
 const TEXT_DATABASE_KO = 'db/ko/textmaster.db3';
 const TEXT_DATABASE_TW = 'db/zh/textmaster.db3';
 
-// app.use(cors());
-
 app.use(express.static(path.join(__dirname, 'build')));
 
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'build', 'index.html'));
 });
-
-// app.use('/js', express.static(path.join(__dirname, 'build', 'static', 'js')));
-// app.use('/css', express.static(path.join(__dirname, 'build', '/css')));
-// app.use('/img', express.static(path.join(__dirname, 'build', '/img')));
-// app.use('/font', express.static(path.join(__dirname, 'build', '/font')));
 
 app.get('/sr/:cardId', (req, res) => {
     var cardId = req.params.cardId;

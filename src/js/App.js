@@ -30,7 +30,6 @@ class App extends React.Component {
             );
             cardOptions.push(option);
         }
-        // document.getElementById('card-select').selectedIndex = '0';
         var selectedCard = this.state.cards[0].evolution_card_masterid;
         this.setState({
             selected: selectedCard,
@@ -39,7 +38,6 @@ class App extends React.Component {
     }
     
     loadSkillRecord() {
-        // this.currentCard = await buildSkillRecordInfo(this.selected.card_masterid);
         console.log(this.currentCard);
     }
 

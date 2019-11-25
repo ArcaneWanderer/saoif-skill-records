@@ -178,10 +178,10 @@ class SkillRecordGridItem extends React.Component {
             if (buffTag.includes('BuffTime')) {
                 value = durations.shift();
             } else {
-                if (buffList.length <= 0) {
+                if (buffs.length <= 0) {
                     break;
                 }
-                var buff = buffList.shift();
+                var buff = buffs.shift();
 
                 // If it has buffEffects, then the buff is from an active skill
                 // Data from active and passive skills are stored differently for some reason

@@ -17,7 +17,6 @@ class App extends React.Component {
 
     handleChange(e) {
         this.setState({ selected: e.target.value });
-        console.log(e.target.value);
     }
 
     initializeCardOptions() {
@@ -59,9 +58,7 @@ class App extends React.Component {
             app = (
                 <div id="app">
                     Loading app...
-                    <br></br>
-                    <select hidden id="card-select">
-                    </select>
+                    <select hidden id="card-select"></select>
                 </div>
             )
         }

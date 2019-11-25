@@ -2,6 +2,7 @@ import React from 'react';
 import {buildSkillRecordInfo} from './script.js';
 import '../css/SkillRecordGridItem.css';
 
+import loadGif from '../img/oie_trans.gif';
 import starOn from '../img/UI_icon_status_rare_on.png';
 import starOff from '../img/UI_icon_status_rare_off.png';
 import cardFrame1_1 from '../img/Base_Frame/sr_base_1_1.png';
@@ -19,14 +20,33 @@ class SkillRecordGridItem extends React.Component {
 
         this.state = {
             level: 1,
+            maxLevel: 1,
             cardId: props.cardId,
-            skillRecord: null
+            skillRecord: null,
+            cardImageLoaded: false
         };
 
         buildSkillRecordInfo(props.cardId).then((data) => {
             this.initializeLevel(data);
             this.updateSkillRecord();
         });
+    }
+
+    handleChange(e) {
+        this.setState({ level: e.target.value }, () => {
+            this.updateSkillRecord();
+        });
+    }
+
+    handleLoad(e) {
+        if (!this.state.cardImageLoaded) {
+            this.setState({ cardImageLoaded: true });
+            document.getElementById('card-image').style.display = 'inline';
+        }
+    }
+
+    blockKeyInput(e) {
+        // e.preventDefault();
     }
 
     initializeLevel(skillRecord) {
@@ -50,11 +70,12 @@ class SkillRecordGridItem extends React.Component {
             default:
                 level = 1;
         }
+        this.setState({ maxLevel: level + 20 });
         this.setState({ level: level });
     }
 
     componentWillReceiveProps(nextProps) {
-        this.setState({ cardId: nextProps.cardId, });
+        this.setState({ cardId: nextProps.cardId });
         buildSkillRecordInfo(nextProps.cardId).then((data) => {
             this.initializeLevel(data);
             this.updateSkillRecord();
@@ -62,6 +83,11 @@ class SkillRecordGridItem extends React.Component {
     }
 
     async updateSkillRecord() {
+        this.setState({ cardImageLoaded: false });
+        if (document.getElementById('card-image')) {
+            document.getElementById('card-image').style.display = 'none';
+        }
+
         return new Promise(async (resolve, reject) => {
             var skillRecord = await buildSkillRecordInfo(this.state.cardId);
             console.log(skillRecord);
@@ -194,12 +220,6 @@ class SkillRecordGridItem extends React.Component {
         return description;
     }
 
-    handleChange(e) {
-        this.setState({ level: e.target.value }, () => {
-            this.updateSkillRecord();
-        });
-    }
-
     render() {
 
         if (this.state && this.state.skillRecord) {
@@ -213,10 +233,6 @@ class SkillRecordGridItem extends React.Component {
                     stars.push(<span key={i+1}><img width='25em' height='25em' src={starOff}></img></span>);
                 }
             }
-
-            var cardImage = (
-                <img src={'https://raw.githubusercontent.com/Nayuta-Kani/SAOIF-Skill-Records-Database/master/srimages/sr_icon_l_' + (this.state.skillRecord.cardInfo.evolution_card_masterid > 0 ? this.state.skillRecord.cardInfo.evolution_card_masterid : this.state.skillRecord.cardInfo.card_masterid) + '.png'}></img>
-            )
 
             var imageSource;
 
@@ -252,13 +268,26 @@ class SkillRecordGridItem extends React.Component {
                 }
             }
 
+            var cardImage = (
+                <img 
+                    onLoad={ this.handleLoad.bind(this) }
+                    id='card-image'
+                    // style={{ display: this.state.cardImageLoaded ? "inline" : "none" }}
+                    src={'https://raw.githubusercontent.com/Nayuta-Kani/SAOIF-Skill-Records-Database/master/srimages/sr_icon_l_' + (this.state.skillRecord.cardInfo.evolution_card_masterid > 0 ? this.state.skillRecord.cardInfo.evolution_card_masterid : this.state.skillRecord.cardInfo.card_masterid) + '.png'}>
+                </img>
+            )
+
             var cardBackground = <img src={imageSource}></img>;
         }
 
         return (
             this.state && this.state.skillRecord &&
             <div className="card">
-                <div><input type="number" placeholder="Level" min="1" max="100" onChange={ this.handleChange.bind(this) } value={ this.state.level }></input></div><br></br>
+                <div className="card-actions">
+                    <input type="number" placeholder="Level" min="1" max={ this.state.maxLevel } onChange={ this.handleChange.bind(this) } value={ this.state.level } onKeyDown={ this.blockKeyInput.bind(this) }></input>
+                    <button onClick={ this.toggleTransform.bind(this) }>Toggle transform</button>
+                </div>
+                <br></br>
                 <div className="card-info">
                     <div className="card-type">
                         <span>{ this.state.skillRecord.cardInfo.type == 1 ? "Sword Skill" : "Ability" }</span>
@@ -268,13 +297,14 @@ class SkillRecordGridItem extends React.Component {
                         { stars }
                     </div>
                     <div className="card-img">
-                        { cardBackground}
+                        { this.state.cardImageLoaded ? "" : <img src={loadGif}></img>}
+                        { this.state.cardImageLoaded ? cardBackground : "" }
                         { cardImage }
                     </div>
                     <div className="card-details">
                         <p className="skill-name">
-                            { this.state.skillRecord.skillName }
-                            <span className="skill-level">Lv. { this.state.level }</span>
+                            { this.state.skillRecord.skillName.replace(/\//g, ', ') }
+                            <span className="skill-level"><br></br>Lv. { this.state.level }</span>
                         </p>
                         <p className="skill-description">
                             {this.state.skillRecord.skillDescription }
@@ -283,9 +313,6 @@ class SkillRecordGridItem extends React.Component {
                             <span>#{ this.state.skillRecord.cardInfo.card_masterid }</span>
                         </div>
                     </div>
-                </div>
-                <div className="card-actions">
-                    <button onClick={ this.toggleTransform.bind(this) }>Toggle transform</button>
                 </div>
             </div>
         )

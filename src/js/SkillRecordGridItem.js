@@ -44,6 +44,18 @@ class SkillRecordGridItem extends React.Component {
             document.getElementById('card-image').style.display = 'inline';
         }
     }
+    
+    toggleTransform() {
+        if (this.state.skillRecord.cardInfo.evolution_card_masterid > 0) {
+            this.setState({ cardId: this.state.skillRecord.cardInfo.evolution_card_masterid }, () => {
+                this.updateSkillRecord();
+            });
+        } else {
+            this.setState({ cardId: this.state.skillRecord.cardInfo.base_card_masterid }, () => {
+                this.updateSkillRecord();
+            });
+        }
+    }
 
     blockKeyInput(e) {
         // e.preventDefault();
@@ -76,26 +88,30 @@ class SkillRecordGridItem extends React.Component {
         });
     }
 
-    componentWillReceiveProps(nextProps) {
-        this.setState({ cardId: nextProps.cardId });
-        buildSkillRecordInfo(nextProps.cardId).then((data) => {
-            this.initializeLevel(data);
-            this.updateSkillRecord();
-        });
+    componentDidUpdate(prevProps) {
+        if (prevProps.cardId != this.props.cardId) {
+            this.setState({ cardId: this.props.cardId }, () => {
+                buildSkillRecordInfo(this.props.cardId).then((data) => {
+                    this.initializeLevel(data);
+                    this.updateSkillRecord();
+                });
+            });
+        }
     }
 
-    async updateSkillRecord() {
+    updateSkillRecord() {
         this.setState({ cardImageLoaded: false });
         if (document.getElementById('card-image')) {
             document.getElementById('card-image').style.display = 'none';
         }
 
-        return new Promise(async (resolve, reject) => {
+        new Promise((resolve, reject) => {
             buildSkillRecordInfo(this.state.cardId).then((data) => {
                 var skillRecord = data;
         
                 var description = skillRecord.skillDescription;
         
+                console.log(skillRecord);
                 description = this.mapDescription(description, skillRecord, this.state.level);
                 skillRecord.skillDescription = description;
         
@@ -106,18 +122,6 @@ class SkillRecordGridItem extends React.Component {
                 });
             });
         });
-    }
-    
-    toggleTransform() {
-        if (this.state.skillRecord.cardInfo.evolution_card_masterid > 0) {
-            this.setState({ cardId: this.state.skillRecord.cardInfo.evolution_card_masterid }, () => {
-                this.updateSkillRecord();
-            });
-        } else {
-            this.setState({ cardId: this.state.skillRecord.cardInfo.base_card_masterid }, () => {
-                this.updateSkillRecord();
-            });
-        }
     }
 
     mapDescription(rawDescription, skillRecord, level) {
@@ -203,6 +207,8 @@ class SkillRecordGridItem extends React.Component {
             // e.g. {"%BuffRate%": "23%"}
             buffMappings[buffTag] = value;
         }
+
+        console.log(buffMappings);
 
         // The replacement via mapping proper
         for (var tag in buffMappings) {

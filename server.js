@@ -118,23 +118,18 @@ app.get('/buff/passive/:cardId', (req, res) => {
 
     var data = [];
     
-    db.run(`ATTACH DATABASE '${TEXT_DATABASE_EN}' AS textmaster`, [], (error) => {
+    db.all(sql, [], (error, rows) => {
         if (error) {
             throw error;
         }
-        db.all(sql, [], (error, rows) => {
-            if (error) {
-                throw error;
-            }
-            rows.forEach((row) => {
-                data.push(row);
-            });
-
-            res.contentType('application/json');
-            res.send(JSON.stringify(data));
-            
-            closeConnection(db);
+        rows.forEach((row) => {
+            data.push(row);
         });
+
+        res.contentType('application/json');
+        res.send(JSON.stringify(data));
+        
+        closeConnection(db);
     });
 });
 
@@ -166,30 +161,37 @@ app.get('/buff/active/:cardId', (req, res) => {
                 buffSkills.push(row);
             });
 
-            var count = 0;
-            buffSkills.forEach((buffSkill) => {
-                var sql3 = `SELECT *
-                            FROM MBuffPowerupMasters
-                            WHERE buff_masterid = '${buffSkill['buff_masterid']}'`;
-                db.all(sql3, [], (error, rows) => {
-                    if (error) {
-                        throw error;
-                    }
-                    var buffEffects = [];
-                    rows.forEach((row) => {
-                        buffEffects.push(row);
-                    });
-                    buffSkill['buffEffects'] = buffEffects;
-                    count++;
+            if (buffSkills.length > 0) {
+                var count = 0;
+                buffSkills.forEach((buffSkill) => {
+                    var sql3 = `SELECT *
+                                FROM MBuffPowerupMasters
+                                WHERE buff_masterid = '${buffSkill['buff_masterid']}'`;
+                    db.all(sql3, [], (error, rows) => {
+                        if (error) {
+                            throw error;
+                        }
+                        var buffEffects = [];
+                        rows.forEach((row) => {
+                            buffEffects.push(row);
+                        });
+                        buffSkill['buffEffects'] = buffEffects;
+                        count++;
 
-                    if (count == buffSkills.length) {
-                        res.contentType('application/json');
-                        res.send(JSON.stringify(buffSkills));
-                        
-                        closeConnection(db);
-                    }
+                        if (count >= buffSkills.length) {
+                            res.contentType('application/json');
+                            res.send(JSON.stringify(buffSkills));
+                            
+                            closeConnection(db);
+                        }
+                    });
                 });
-            });
+            } else {
+                res.contentType('application/json');
+                res.send(JSON.stringify([]));
+                
+                closeConnection(db);
+            }
         });
     });
 });

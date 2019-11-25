@@ -233,10 +233,10 @@ class SkillRecordGridItem extends React.Component {
             for (var i = 0; i < this.state.skillRecord.cardInfo.rarity; i++) {
                 var star = <span key={i}><img width='25em' height='25em' src={starOn}></img></span>;
                 stars.push(star);
-                
-                if (this.state.skillRecord.cardInfo.evolution_card_masterid > 0) {
-                    stars.push(<span key={i+1}><img width='25em' height='25em' src={starOff}></img></span>);
-                }
+            }
+            // If the skill record is not the transformed version
+            if (this.state.skillRecord.cardInfo.evolution_card_masterid > 0) {
+                stars.push(<span key={this.state.skillRecord.cardInfo.rarity}><img width='25em' height='25em' src={starOff}></img></span>);
             }
 
             var imageSource;

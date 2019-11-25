@@ -23,6 +23,7 @@ class SkillRecordGridItem extends React.Component {
             maxLevel: 1,
             cardId: props.cardId,
             skillRecord: null,
+            skillDescription: '',
             cardImageLoaded: false
         };
 
@@ -105,7 +106,6 @@ class SkillRecordGridItem extends React.Component {
     }
 
     updateSkillRecord() {
-
         new Promise((resolve, reject) => {
             buildSkillRecordInfo(this.state.cardId).then((data) => {
                 var skillRecord = data;
@@ -114,10 +114,10 @@ class SkillRecordGridItem extends React.Component {
         
                 console.log(skillRecord);
                 description = this.mapDescription(description, skillRecord, this.state.level);
-                skillRecord.skillDescription = description;
         
                 this.setState({
-                    skillRecord: skillRecord
+                    skillRecord: skillRecord,
+                    skillDescription: description
                 }, () => {
                     resolve();
                 });
@@ -306,7 +306,7 @@ class SkillRecordGridItem extends React.Component {
                             <span className="skill-level"><br></br>Lv. { this.state.level }</span>
                         </p>
                         <p className="skill-description">
-                            {this.state.skillRecord.skillDescription }
+                            {this.state.skillDescription }
                         </p>
                         <div className="card-id-text">
                             <span>#{ this.state.skillRecord.cardInfo.card_masterid }</span>

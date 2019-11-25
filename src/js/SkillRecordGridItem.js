@@ -34,9 +34,11 @@ class SkillRecordGridItem extends React.Component {
     }
 
     handleChange(e) {
-        this.setState({ level: e.target.value }, () => {
-            this.updateSkillRecord();
-        });
+        if (!isNaN(e.target.value)) {
+            this.setState({ level: parseInt(e.target.value) }, () => {
+                this.updateSkillRecord();
+            });
+        }
     }
 
     handleLoad(e) {
@@ -109,10 +111,7 @@ class SkillRecordGridItem extends React.Component {
         new Promise((resolve, reject) => {
             buildSkillRecordInfo(this.state.cardId).then((data) => {
                 var skillRecord = data;
-        
                 var description = skillRecord.skillDescription;
-        
-                console.log(skillRecord);
                 description = this.mapDescription(description, skillRecord, this.state.level);
         
                 this.setState({
@@ -182,7 +181,7 @@ class SkillRecordGridItem extends React.Component {
                 if (buffs.length <= 0) {
                     break;
                 }
-                var buff = buffs.shift();
+                buff = buffs.shift();
 
                 // If it has buffEffects, then the buff is from an active skill
                 // Data from active and passive skills are stored differently for some reason
@@ -208,8 +207,6 @@ class SkillRecordGridItem extends React.Component {
             // e.g. {"%BuffRate%": "23%"}
             buffMappings[buffTag] = value;
         }
-
-        console.log(buffMappings);
 
         // The replacement via mapping proper
         for (var tag in buffMappings) {
@@ -306,7 +303,7 @@ class SkillRecordGridItem extends React.Component {
                             <span className="skill-level"><br></br>Lv. { this.state.level }</span>
                         </p>
                         <p className="skill-description">
-                            {this.state.skillDescription }
+                            { this.state.skillDescription }
                         </p>
                         <div className="card-id-text">
                             <span>#{ this.state.skillRecord.cardInfo.card_masterid }</span>

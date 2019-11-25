@@ -70,8 +70,10 @@ class SkillRecordGridItem extends React.Component {
             default:
                 level = 1;
         }
-        this.setState({ maxLevel: level + 20 });
-        this.setState({ level: level });
+        this.setState({ 
+            maxLevel: level + 20,
+            level: level 
+        });
     }
 
     componentWillReceiveProps(nextProps) {
@@ -89,19 +91,19 @@ class SkillRecordGridItem extends React.Component {
         }
 
         return new Promise(async (resolve, reject) => {
-            var skillRecord = await buildSkillRecordInfo(this.state.cardId);
-            console.log(skillRecord);
-    
-            var description = skillRecord.skillDescription;
-            console.log(description);
-    
-            description = this.mapDescription(description, skillRecord, this.state.level);
-            skillRecord.skillDescription = description;
-    
-            this.setState({
-                skillRecord: skillRecord
-            }, () => {
-                resolve();
+            buildSkillRecordInfo(this.state.cardId).then((data) => {
+                var skillRecord = data;
+        
+                var description = skillRecord.skillDescription;
+        
+                description = this.mapDescription(description, skillRecord, this.state.level);
+                skillRecord.skillDescription = description;
+        
+                this.setState({
+                    skillRecord: skillRecord
+                }, () => {
+                    resolve();
+                });
             });
         });
     }
@@ -127,9 +129,6 @@ class SkillRecordGridItem extends React.Component {
         // Immediately compute and map the skill damage multiplier
         description = description.replace('%SkillDamage%', skillRecord.skillInfo['bAtkRate'] / 100 + (level-1) + '%');
 
-        console.log(skillRecord);
-        console.log(description);
-
         // Get all the buff tags and store them in an array in the order that they are found
         // e.g. ["%BuffRate%", "%BuffTime%"]
         var buffTags = description.match(/\%Buff.+?\%/g);
@@ -138,8 +137,6 @@ class SkillRecordGridItem extends React.Component {
         if (buffTags == null) {
             return description;
         }
-
-        console.log(buffTags);
 
         var buffs = []; // The buffs taken from buffList and stored in a Queue data structure
         var buffList = []; // Contains a reference to the buffs according to the database format
@@ -154,7 +151,6 @@ class SkillRecordGridItem extends React.Component {
 
         // Do one pass across the list of buffs and store them in a different array
         // Also store the durations of each buff
-        console.log(buffList);
         for (var i = 0; i < buffList.length; i++) {
             var buff = buffList[i];
             buffs.push(buff);
@@ -163,9 +159,6 @@ class SkillRecordGridItem extends React.Component {
                 durations.push(buff.buff_time);
             }
         }
-        console.log(buffList);
-        
-        console.log(buffs.length);
 
         // e.g. {"%BuffRate%": "23%"}
         // The stored value is already the computed one based on level ^
@@ -213,7 +206,6 @@ class SkillRecordGridItem extends React.Component {
 
         // The replacement via mapping proper
         for (var tag in buffMappings) {
-            console.log(tag, buffMappings[tag]);
             description = description.replace(new RegExp(tag, "g"), buffMappings[tag]);
         }
 

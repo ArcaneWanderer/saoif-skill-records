@@ -166,8 +166,8 @@ app.get('/buff/active/:cardId', (req, res) => {
                 buffSkills.push(row);
             });
 
-            
-            for (var buffSkill in buffSkills) {
+            var count = 0;
+            buffSkills.forEach((buffSkill) => {
                 var sql3 = `SELECT *
                             FROM MBuffPowerupMasters
                             WHERE buff_masterid = '${buffSkill['buff_masterid']}'`;
@@ -180,13 +180,16 @@ app.get('/buff/active/:cardId', (req, res) => {
                         buffEffects.push(row);
                     });
                     buffSkill['buffEffects'] = buffEffects;
-                });
-            }
+                    count++;
 
-            res.contentType('application/json');
-            res.send(JSON.stringify(buffSkills));
-            
-            closeConnection(db);
+                    if (count == buffSkills.length) {
+                        res.contentType('application/json');
+                        res.send(JSON.stringify(buffSkills));
+                        
+                        closeConnection(db);
+                    }
+                });
+            });
         });
     });
 });

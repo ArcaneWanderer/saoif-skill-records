@@ -34,11 +34,20 @@ class SkillRecordGridItem extends React.Component {
     }
 
     handleChange(e) {
-        if (!isNaN(e.target.value)) {
-            this.setState({ level: parseInt(e.target.value) }, () => {
-                this.updateSkillRecord();
-            });
+        var input = e.target.value;
+        if (isNaN(input) || input == '0' || input == '') {
+            input = 1;
+        } else {
+            input = parseInt(input);
+            if (input < 0) {
+                input = 1;
+            } else if ( input > this.state.maxLevel) {
+                input = this.state.maxLevel;
+            }
         }
+        this.setState({ level: input }, () => {
+            this.updateSkillRecord();
+        });
     }
 
     handleLoad(e) {

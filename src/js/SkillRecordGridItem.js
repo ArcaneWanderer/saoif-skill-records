@@ -151,7 +151,7 @@ class SkillRecordGridItem extends React.Component {
         var description = rawDescription; // The description template containing buff tags and no values
         
         // Replace line breaks with HTML line breaks <br>
-        description = description.replace(/\\n/g, '\n');
+        description = description.replace(/\\n/g, '<br>');
 
         // Immediately compute and map the skill damage multiplier
         description = description.replace('%SkillDamage%', skillRecord.skillInfo['bAtkRate'] / 100 + (level-1) + '%');
@@ -304,7 +304,7 @@ class SkillRecordGridItem extends React.Component {
             <div className="card">
                 <div className="card-actions">
                     <input type="number" placeholder="Level" min="1" max={ this.state.maxLevel } onChange={ this.handleChange.bind(this) } value={ this.state.level } onKeyDown={ this.blockKeyInput.bind(this) }></input>
-                    <button onClick={ this.toggleTransform.bind(this) }>Toggle transform</button>
+                    <button onClick={ this.toggleTransform.bind(this) }>Transform</button>
                 </div>
                 <br></br>
                 <div className="card-info">
@@ -325,8 +325,9 @@ class SkillRecordGridItem extends React.Component {
                             { this.state.skillRecord.skillName.replace(/\//g, ', ') }
                             <span className="skill-level"><br></br>Lv. { this.state.level }</span>
                         </p>
-                        <p className="skill-description">
-                            { this.state.skillDescription }
+                        {/* <p className="skill-description"> */}
+                        <p className="skill-description" dangerouslySetInnerHTML={{__html: this.state.skillDescription}}>
+                            {/* { this.state.skillDescription } */}
                         </p>
                         <div className="card-id-text">
                             <span>#{ this.state.skillRecord.cardInfo.card_masterid }</span>

@@ -10,7 +10,7 @@
 @import url('https://fonts.googleapis.com/css?family=Roboto&display=swap');
 
 body {
-    color: #636363;
+    color: #4b4b4b;
     font-family: 'Roboto', sans-serif;
 
     background-image: url(./img/background.jpg);
@@ -35,6 +35,14 @@ select, input, button {
     box-shadow:
     0 10px 25px -15px rgba(0, 0, 0, .5),
     0 -10px 25px -15px rgba(0, 0, 0, .5);
+}
+
+button {
+    font-family: 'SAO Font';
+    /* font-size: 1.25em; */
+    color: #747474;
+    background-color: white;
+    letter-spacing: 0.05em;
 }
 
 #app {

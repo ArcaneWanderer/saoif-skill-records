@@ -135,6 +135,10 @@ class SkillRecordGridItem extends React.Component {
             buildSkillRecordInfo(this.state.cardId).then((data) => {
                 var skillRecord = data;
                 var description = skillRecord.skillDescription;
+
+                console.log(skillRecord);
+                console.log(description);
+
                 description = this.mapDescription(description, skillRecord, this.state.level);
         
                 this.setState({
@@ -152,6 +156,20 @@ class SkillRecordGridItem extends React.Component {
         
         // Replace line breaks with HTML line breaks <br>
         description = description.replace(/\\n/g, '<br>');
+
+        if (skillRecord.hasOwnProperty('chargeInfo')) {
+            var chargeInfo = skillRecord.chargeInfo;
+
+            description = description.replace(`%SkillDamage ${chargeInfo.skill_masterid}%`, chargeInfo['bAtkRate'] / 100 + (level-1) + '%');
+
+            if (skillRecord.chargeBuffs.length > 0) {
+                var buff = skillRecord.chargeBuffs[0];
+                var buffRate = buff.buffEffects[0].slope * (buff.buff_level + level - 1) + buff.buffEffects[0].intercept;
+                buffRate = (buffRate / 100) + '%';
+                description = description.replace(`%BuffRate ${chargeInfo.skill_masterid}%`, buffRate);
+                description = description.replace(`%BuffTime ${chargeInfo.skill_masterid}%`, buff.buff_time);
+            }
+        }
 
         // Immediately compute and map the skill damage multiplier
         description = description.replace('%SkillDamage%', skillRecord.skillInfo['bAtkRate'] / 100 + (level-1) + '%');
@@ -209,7 +227,7 @@ class SkillRecordGridItem extends React.Component {
                 // If it has buffEffects, then the buff is from an active skill
                 // Data from active and passive skills are stored differently for some reason
                 if (buff.hasOwnProperty('buffEffects')) {
-                    value = buff.buffEffects[0].slope * (buff.buff_level + level) + buff.buffEffects[0].intercept;
+                    value = buff.buffEffects[0].slope * (buff.buff_level + level - 1) + buff.buffEffects[0].intercept;
                 } else {
                     value = buff.slope * level + buff.intercept;
                 }

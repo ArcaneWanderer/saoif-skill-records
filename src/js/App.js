@@ -29,7 +29,7 @@ class App extends React.Component {
             );
             cardOptions.push(option);
         }
-        var selectedCard = this.state.cards[6].evolution_card_masterid;
+        var selectedCard = this.state.cards[178].evolution_card_masterid;
         this.setState({
             selected: selectedCard,
             cardOptions: cardOptions

@@ -19,207 +19,213 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'build', 'index.html'));
 });
 
+const db = createConnection(JP_DATABASE);
+db.run(`ATTACH DATABASE '${TEXT_DATABASE_JP}' AS textmaster_jp`);
+db.run(`ATTACH DATABASE '${TEXT_DATABASE_EN}' AS textmaster_en`);
+db.run(`ATTACH DATABASE '${TEXT_DATABASE_KO}' AS textmaster_ko`);
+db.run(`ATTACH DATABASE '${TEXT_DATABASE_TW}' AS textmaster_tw`);
+
 app.get('/sr/:cardId', (req, res) => {
-    var cardId = req.params.cardId;
-    // var db = createConnection(JP_DATABASE);
-    // var sql = `SELECT *
-    //             FROM MCardMasters
-    //             WHERE card_masterid = '${cardId}'`;
+    const cardId = req.params.cardId;
+    const sql = `SELECT *
+                FROM MCardMasters
+                WHERE card_masterid = '${cardId}'`;
 });
 
 app.get('/card', (req, res) => {
-    var db = createConnection(JP_DATABASE);
-    var sql = `SELECT card_masterid, data, evolution_card_masterid, skill_masterid
+    const sql = `SELECT card_masterid, data, evolution_card_masterid
                 FROM MCardMasters
                 INNER JOIN textmaster.MTextMasterS
                 ON text_name_id = id
                 WHERE data LIKE "[%" AND rarity = max_rarity - 1`;
-    
-    db.run(`ATTACH DATABASE '${TEXT_DATABASE_EN}' AS textmaster`, [], (error) => {
+
+    db.all(sql, (error, rows) => {
         if (error) { 
-            throw error;
+            console.log('Error when retrieving card options:', error);
         }
 
-        db.all(sql, [], (error, rows) => {
-            if (error) { 
-                throw error;
-            }
-
-            var data = [];
-            rows.forEach((row) => {
-                data.push(row);
-            });
-
-            res.contentType('application/json');
-            res.send(JSON.stringify(data));
-            
-            closeConnection(db);
-        });
-    });
-
-});
-
-app.get('/card/:cardId', (req, res) => {
-    var cardId = req.params.cardId;
-    var db = createConnection(JP_DATABASE);
-    var sql = `SELECT *
-                FROM MCardMasters
-                WHERE card_masterid = '${cardId}'`;
-    
-    db.get(sql, [], (error, row) => {
-        if (error) {
-            throw error;
-        }
-
-        res.contentType('application/json');
-        
-        if (row) {
-            res.send(row);
-        } 
-        else {
-            res.send("Error");
-        }
-        
-        closeConnection(db);
-    });
-});
-
-app.get('/skill/:skillId', (req, res) => {
-    var skillId = req.params.skillId;
-    var db = createConnection(JP_DATABASE);
-    var sql = `SELECT *
-                FROM MSkillMasters
-                WHERE skill_masterid = '${skillId}'`;
-    
-    db.get(sql, [], (error, row) => {
-        if (error) {
-            throw error;
-        }
-
-        res.contentType('application/json');
-        
-        if (row) {
-            res.send(row);
-        } 
-        else {
-            res.send("Error");
-        }
-        
-        closeConnection(db);
-    });
-});
-
-app.get('/buff/passive/:cardId', (req, res) => {
-    var cardId = req.params.cardId;
-    var db = createConnection(JP_DATABASE);
-    var sql = `SELECT *
-                FROM MCardPowerupMasters
-                WHERE card_masterid = '${cardId}'`;
-
-    var data = [];
-    
-    db.all(sql, [], (error, rows) => {
-        if (error) {
-            throw error;
-        }
+        var data = [];
         rows.forEach((row) => {
             data.push(row);
         });
 
         res.contentType('application/json');
         res.send(JSON.stringify(data));
-        
-        closeConnection(db);
     });
 });
 
-app.get('/buff/active/:cardId', (req, res) => {
-    var cardId = req.params.cardId;
-    var db = createConnection(JP_DATABASE);
-    var sql = `SELECT *
+async function getCardData(cardId) {
+    const sql = `SELECT *
                 FROM MCardMasters
                 WHERE card_masterid = '${cardId}'`;
     
-    var skillId;
-    db.get(sql, [], (error, row) => {
-        if (error) {
-            throw error;
-        }
-
-        skillId = row['skill_masterid'];
-        
-        var sql2 = `SELECT *
-                    FROM MSkillBuffMasters
-                    WHERE skill_masterid = '${skillId}'`
-
-        var buffSkills = [];
-        db.all(sql2, [], (error, rows) => {
+    return new Promise((resolve, reject) => {
+        db.get(sql, (error, row) => {
             if (error) {
-                throw error;
+                console.log('Error when retrieving card data:', error);
+                reject(null);
             }
-            rows.forEach((row) => {
-                buffSkills.push(row);
-            });
-
-            if (buffSkills.length > 0) {
-                var count = 0;
-                buffSkills.forEach((buffSkill) => {
-                    var sql3 = `SELECT *
-                                FROM MBuffPowerupMasters
-                                WHERE buff_masterid = '${buffSkill['buff_masterid']}'`;
-                    db.all(sql3, [], (error, rows) => {
-                        if (error) {
-                            throw error;
-                        }
-                        var buffEffects = [];
-                        rows.forEach((row) => {
-                            buffEffects.push(row);
-                        });
-                        buffSkill['buffEffects'] = buffEffects;
-                        count++;
-
-                        if (count >= buffSkills.length) {
-                            res.contentType('application/json');
-                            res.send(JSON.stringify(buffSkills));
-                            
-                            closeConnection(db);
-                        }
-                    });
-                });
-            } else {
-                res.contentType('application/json');
-                res.send(JSON.stringify([]));
-                
-                closeConnection(db);
-            }
+            resolve(row);
         });
     });
-});
+};
 
-app.get('/text/:textId', (req, res) => {
-    var textId = req.params.textId;
-    var db = createConnection(TEXT_DATABASE_EN);
+async function getSkillData(skillId) {
+    const sql = `SELECT *
+                FROM MSkillMasters
+                WHERE skill_masterid = '${skillId}'`;
+    
+    return new Promise((resolve, reject) => {
+        db.get(sql, (error, row) => {
+            if (error) {
+                console.log('Error when retrieving skill data:', error);
+                reject(null);
+            }
+            resolve(row);
+        });
+    });
+}
+
+async function getPassiveBuffs(cardId) {
+    const sql = `SELECT *
+                FROM MCardPowerupMasters
+                WHERE card_masterid = '${cardId}'`;
+
+    return new Promise((resolve, reject) => {
+        db.all(sql, (error, rows) => {
+            if (error) {
+                console.log('Error when retrieving passive buffs data:', error);
+                reject(null);
+            }
+            var data = [];
+            rows.forEach((row) => {
+                data.push(row);
+            });
+            resolve(data);
+        });
+    });
+}
+
+async function getActiveBuffs(skillId) {
+    var sql = `SELECT *
+                FROM MSkillBuffMasters
+                WHERE skill_masterid = '${skillId}'`;
+
+    var buffs = [];
+    return new Promise((resolve, reject) => {
+        db.all(sql, (error, rows) => {
+            if (error) {
+                console.log('Error when retrieving active buffs data:', error);
+                reject(null);
+            }
+            var data = [];
+            rows.forEach((row) => {
+                data.push(row);
+            });
+            resolve(data);
+        });
+    }).then((data) => {
+        buffs = data;
+
+        return Promise.all(buffs.map((buff) => {
+            var sql = `SELECT *
+                    FROM MBuffPowerupMasters
+                    WHERE buff_masterid = '${buff['buff_masterid']}'`;
+                    
+            db.get(sql, (error, row) => {
+                if (error) {
+                    console.log('Error when retrieving buff effect data:', error);
+                    reject(null);
+                }
+                resolve(row);
+            });
+        })).then((data) => {
+            for (var i = 0; i < buffs.length; i++) {
+                buffs[i]['buffEffect'] = data[i];
+            }
+            resolve(buffs);
+        }).catch((error) => {
+            return null;
+        });
+    });
+}
+
+// app.get('/buff/charge/:skillId', (req, res) => {
+//     var skillId = req.params.skillId;
+//     var db = createConnection(JP_DATABASE);
+//     var sql = `SELECT *
+//                 FROM MSkillBuffMasters
+//                 WHERE skill_masterid = '${skillId}'`
+
+//     var buffSkills = [];
+//     db.all(sql, [], (error, rows) => {
+//         if (error) {
+//             throw error;
+//         }
+//         rows.forEach((row) => {
+//             buffSkills.push(row);
+//         });
+
+//         if (buffSkills.length > 0) {
+//             var count = 0;
+//             buffSkills.forEach((buffSkill) => {
+//                 var sql2 = `SELECT *
+//                             FROM MBuffPowerupMasters
+//                             WHERE buff_masterid = '${buffSkill['buff_masterid']}'`;
+//                 db.all(sql2, [], (error, rows) => {
+//                     if (error) {
+//                         throw error;
+//                     }
+//                     var buffEffects = [];
+//                     rows.forEach((row) => {
+//                         buffEffects.push(row);
+//                     });
+//                     buffSkill['buffEffects'] = buffEffects;
+//                     count++;
+
+//                     if (count >= buffSkills.length) {
+//                         res.contentType('application/json');
+//                         res.send(JSON.stringify(buffSkills));
+                        
+//                         closeConnection(db);
+//                     }
+//                 });
+//             });
+//         } else {
+//             res.contentType('application/json');
+//             res.send(JSON.stringify([]));
+            
+//             closeConnection(db);
+//         }
+//     });
+// });
+
+async function getTextData(textId) {
     var sql = `SELECT *
                 FROM MTextMasters
                 WHERE id = '${textId}'`;
     
-    db.get(sql, [], (error, row) => {
-        if (error) {
-            throw error;
-        }
-
-        res.contentType('application/json');
-        
-        if (row) {
-            res.send(row);
-        } 
-        else {
-            res.send("Error");
-        }
-        
-        closeConnection(db);
+    return new Promise((resolve, reject) => {
+        db.get(sql, (error, row) => {
+            if (error) {
+                console.log('Error when retrieving skill data');
+                reject(error);
+            }
+            resolve(row);
+        });
     });
-});
+}
+
+async function getSkillRecord(cardId) {
+    var cardData;
+    var skillData;
+    var passiveBuffData;
+    var activeBuffData;
+    var chargeSkill;
+    var chargeBeforeBuffData;
+    var chargeAfterBuffData;
+}
+
 
 function createConnection(databaseFile) {
     var db = new sqlite3.Database(databaseFile, (error) => {

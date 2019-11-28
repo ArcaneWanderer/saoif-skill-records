@@ -97,6 +97,26 @@ async function loadActiveBuffs(cardId) {
     });
 }
 
+async function loadChargeBuffs(skillId) {
+    var buffs = [];
+    return new Promise(function(resolve, reject) {
+        fetch('/buff/charge/' + skillId, {method: 'get'})
+            .then(function(response) {
+                if (response.status !== 200) {
+                    console.log('Looks like there was a problem. Status Code: ' + response.status);
+                    return;
+                }
+
+                return response.json();
+            }).then(function(data) {
+                buffs = data;
+                resolve(buffs);
+            }).catch(function(err) {
+                console.log('Fetch Error :-S', err);
+            });
+    });
+}
+
 async function loadTextData(textId) {
     var textData = '';
     return new Promise(function(resolve, reject) {
@@ -127,6 +147,8 @@ export const buildSkillRecordInfo = function(cardId) {
     var skillDescription;
     var passiveBuffs = [];
     var activeBuffs = [];
+    var chargeInfo;
+    var chargeBuffs = [];
 
     return new Promise(async function(resolve, reject) {
         await loadCardInfo(cardId)
@@ -159,7 +181,30 @@ export const buildSkillRecordInfo = function(cardId) {
                 } else {
                     activeBuffs = data;
                 }
+                return;
+            }).then(async function() {
+                var chargeSkillId = skillDescription.match(/(?!%SkillDamage )(\d)+(?=%)/);
 
+                if (chargeSkillId && chargeSkillId[0] != 0) {
+                    return await loadSkillInfo(chargeSkillId[0]);
+                } else {
+                    return null;
+                }
+            }).then(async function(data) {
+                if (data) {
+                    chargeInfo = data;
+                    return await loadChargeBuffs(chargeInfo.skill_masterid);
+                } else {
+                    return null;
+                }
+            }).then(async function(data) {
+                if (data) {
+                    chargeBuffs = data;
+                    return null;
+                } else {
+                    return null;
+                }
+            }).then(async function() {
                 skillRecord['cardInfo'] = cardInfo;
                 skillRecord['skillInfo'] = skillInfo;
                 skillRecord['cardName'] = cardName;
@@ -168,6 +213,11 @@ export const buildSkillRecordInfo = function(cardId) {
                 skillRecord['skillDescription'] = skillDescription;
                 skillRecord['passiveBuffs'] = passiveBuffs;
                 skillRecord['activeBuffs'] = activeBuffs;
+
+                if (chargeInfo) {
+                    skillRecord['chargeInfo'] = chargeInfo;
+                    skillRecord['chargeBuffs'] = chargeBuffs;
+                }
 
                 resolve(skillRecord);
             });

@@ -1,5 +1,4 @@
 import React from 'react';
-import {buildSkillRecordInfo} from './script.js';
 import '../css/SkillRecordGridItem.css';
 
 import loadGif from '../img/oie_trans.gif';
@@ -27,7 +26,7 @@ class SkillRecordGridItem extends React.Component {
             cardImageLoaded: false
         };
 
-        buildSkillRecordInfo(props.cardId).then((data) => {
+        this.loadSkillRecordData(props.cardId).then((data) => {
             this.initializeLevel(data);
             this.updateSkillRecord();
         });
@@ -89,7 +88,7 @@ class SkillRecordGridItem extends React.Component {
 
     initializeLevel(skillRecord) {
         var level = 1;
-        switch (skillRecord.cardInfo.rarity) {
+        switch (skillRecord.cardData.rarity) {
             case 5:
                 level = 80;
                 break;
@@ -122,19 +121,38 @@ class SkillRecordGridItem extends React.Component {
             }
             
             this.setState({ cardId: this.props.cardId }, () => {
-                buildSkillRecordInfo(this.props.cardId).then((data) => {
+                this.loadSkillRecordData(this.props.cardId).then((data) => {
                     this.initializeLevel(data);
                     this.updateSkillRecord();
                 });
             });
         }
     }
+    
+    async loadSkillRecordData(cardId) {
+        return new Promise(function(resolve, reject) {
+            fetch('/en/sr/' + cardId, {method: 'get'})
+                .then(function(response) {
+                    if (response.status !== 200) {
+                        console.log('Looks like there was a problem. Status Code: ' + response.status);
+                        return;
+                    }
+    
+                    return response.json();
+                }).then(function(data) {
+                    resolve(data);
+                }).catch(function(err) {
+                    console.log('Fetch Error :-S', err);
+                });
+        });
+    }
 
     updateSkillRecord() {
         new Promise((resolve, reject) => {
-            buildSkillRecordInfo(this.state.cardId).then((data) => {
+            this.loadSkillRecordData(this.state.cardId).then((data) => {
                 var skillRecord = data;
                 var description = skillRecord.skillDescription;
+
                 description = this.mapDescription(description, skillRecord, this.state.level);
         
                 this.setState({
@@ -153,8 +171,37 @@ class SkillRecordGridItem extends React.Component {
         // Replace line breaks with HTML line breaks <br>
         description = description.replace(/\\n/g, '<br>');
 
+        // TODO: Do something better about this duplicated code
+        if (skillRecord.skillData.hasOwnProperty('before')) {
+            var skillData = skillRecord.skillData.before;
+
+            description = description.replace(`%SkillDamage ${skillData.skill_masterid}%`, skillData['bAtkRate'] / 100 + (level-1) + '%');
+
+            if (skillRecord.buffData.before.length > 0) {
+                var buff = skillRecord.buffData.before[0];
+                var buffRate = buff.buffEffect.slope * (buff.buff_level + level - 1) + buff.buffEffect.intercept;
+                buffRate = (buffRate / 100) + '%';
+                description = description.replace(`%BuffRate ${skillData.skill_masterid}%`, buffRate);
+                description = description.replace(`%BuffTime ${skillData.skill_masterid}%`, buff.buff_time);
+            }
+        }
+        
+        if (skillRecord.skillData.hasOwnProperty('after')) {
+            var skillData = skillRecord.skillData.after;
+
+            description = description.replace(`%SkillDamage ${skillData.skill_masterid}%`, skillData['bAtkRate'] / 100 + (level-1) + '%');
+
+            if (skillRecord.buffData.after.length > 0) {
+                var buff = skillRecord.buffData.after[0];
+                var buffRate = buff.buffEffect.slope * (buff.buff_level + level - 1) + buff.buffEffect.intercept;
+                buffRate = (buffRate / 100) + '%';
+                description = description.replace(`%BuffRate ${skillData.skill_masterid}%`, buffRate);
+                description = description.replace(`%BuffTime ${skillData.skill_masterid}%`, buff.buff_time);
+            }
+        }
+
         // Immediately compute and map the skill damage multiplier
-        description = description.replace('%SkillDamage%', skillRecord.skillInfo['bAtkRate'] / 100 + (level-1) + '%');
+        description = description.replace('%SkillDamage%', skillRecord.skillData.base['bAtkRate'] / 100 + (level-1) + '%');
 
         // Get all the buff tags and store them in an array in the order that they are found
         // e.g. ["%BuffRate%", "%BuffTime%"]
@@ -170,11 +217,12 @@ class SkillRecordGridItem extends React.Component {
         var durations = []; // The durations of each skill record as a Queue data structure
 
         // If the skill record is a passive/ability-type (i.e. type == 2)
-        if (skillRecord.cardInfo.type == 2) {
-            buffList = skillRecord.passiveBuffs.reverse();
-        } else {
-            buffList = skillRecord.activeBuffs.reverse();
-        }
+        // if (skillRecord.cardInfo.type == 2) {
+        //     buffList = skillRecord.passiveBuffs.reverse();
+        // } else {
+        //     buffList = skillRecord.activeBuffs.reverse();
+        // }
+        buffList = skillRecord.buffData.base.reverse();
 
         // Do one pass across the list of buffs and store them in a different array
         // Also store the durations of each buff
@@ -208,8 +256,8 @@ class SkillRecordGridItem extends React.Component {
 
                 // If it has buffEffects, then the buff is from an active skill
                 // Data from active and passive skills are stored differently for some reason
-                if (buff.hasOwnProperty('buffEffects')) {
-                    value = buff.buffEffects[0].slope * (buff.buff_level + level) + buff.buffEffects[0].intercept;
+                if (buff.hasOwnProperty('buffEffect')) {
+                    value = buff.buffEffect.slope * (buff.buff_level + level - 1) + buff.buffEffect.intercept;
                 } else {
                     value = buff.slope * level + buff.intercept;
                 }
@@ -244,19 +292,19 @@ class SkillRecordGridItem extends React.Component {
         if (this.state && this.state.skillRecord) {
             var stars = [];
 
-            for (var i = 0; i < this.state.skillRecord.cardInfo.rarity; i++) {
+            for (var i = 0; i < this.state.skillRecord.cardData.rarity; i++) {
                 var star = <span key={i}><img width='25em' height='25em' src={starOn}></img></span>;
                 stars.push(star);
             }
             // If the skill record is not the transformed version
-            if (this.state.skillRecord.cardInfo.evolution_card_masterid > 0) {
-                stars.push(<span key={this.state.skillRecord.cardInfo.rarity}><img width='25em' height='25em' src={starOff}></img></span>);
+            if (this.state.skillRecord.cardData.evolution_card_masterid > 0) {
+                stars.push(<span key={this.state.skillRecord.cardData.rarity}><img width='25em' height='25em' src={starOff}></img></span>);
             }
 
             var imageSource;
 
-            if (this.state.skillRecord.cardInfo.evolution_card_masterid == 0) {
-                switch (this.state.skillRecord.cardInfo.rarity) {
+            if (this.state.skillRecord.cardData.evolution_card_masterid == 0) {
+                switch (this.state.skillRecord.cardData.rarity) {
                     case 2:
                         imageSource = cardFrame1_2;
                         break;
@@ -271,7 +319,7 @@ class SkillRecordGridItem extends React.Component {
                         break;
                 }
             } else {
-                switch (this.state.skillRecord.cardInfo.rarity) {
+                switch (this.state.skillRecord.cardData.rarity) {
                     case 1:
                         imageSource = cardFrame1_1;
                         break;
@@ -292,7 +340,7 @@ class SkillRecordGridItem extends React.Component {
                     onLoad={ this.handleLoad.bind(this) }
                     id='card-image'
                     // style={{ display: this.state.cardImageLoaded ? "inline" : "none" }}
-                    src={'https://raw.githubusercontent.com/Nayuta-Kani/SAOIF-Skill-Records-Database/master/srimages/sr_icon_l_' + (this.state.skillRecord.cardInfo.evolution_card_masterid > 0 ? this.state.skillRecord.cardInfo.evolution_card_masterid : this.state.skillRecord.cardInfo.card_masterid) + '.png'}>
+                    src={'https://raw.githubusercontent.com/Nayuta-Kani/SAOIF-Skill-Records-Database/master/srimages/sr_icon_l_' + (this.state.skillRecord.cardData.evolution_card_masterid > 0 ? this.state.skillRecord.cardData.evolution_card_masterid : this.state.skillRecord.cardData.card_masterid) + '.png'}>
                 </img>
             )
 
@@ -309,7 +357,7 @@ class SkillRecordGridItem extends React.Component {
                 <br></br>
                 <div className="card-info">
                     <div className="card-type">
-                        <span>{ this.state.skillRecord.cardInfo.type == 1 ? "Sword Skill" : "Ability" }</span>
+                        <span>{ this.state.skillRecord.cardData.type == 1 ? "Sword Skill" : "Ability" }</span>
                     </div>
                     <p className="card-title">{ this.state.skillRecord.cardName }</p>
                     <div className="card-rarity">
@@ -330,7 +378,7 @@ class SkillRecordGridItem extends React.Component {
                             {/* { this.state.skillDescription } */}
                         </p>
                         <div className="card-id-text">
-                            <span>#{ this.state.skillRecord.cardInfo.card_masterid }</span>
+                            <span>#{ this.state.skillRecord.cardData.card_masterid }</span>
                         </div>
                     </div>
                 </div>

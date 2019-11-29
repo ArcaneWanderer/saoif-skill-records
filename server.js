@@ -25,13 +25,6 @@ db.run(`ATTACH DATABASE '${TEXT_DATABASE_EN}' AS textmaster_en`);
 db.run(`ATTACH DATABASE '${TEXT_DATABASE_KO}' AS textmaster_ko`);
 db.run(`ATTACH DATABASE '${TEXT_DATABASE_TW}' AS textmaster_tw`);
 
-app.get('/sr/:cardId', (req, res) => {
-    const cardId = req.params.cardId;
-    const sql = `SELECT *
-                FROM MCardMasters
-                WHERE card_masterid = '${cardId}'`;
-});
-
 app.get('/card', (req, res) => {
     const sql = `SELECT card_masterid, data, evolution_card_masterid
                 FROM MCardMasters
@@ -150,6 +143,26 @@ async function getActiveBuffs(skillId) {
     });
 }
 
+async function getChargeSkillData(skillId) {
+    const sql = `SELECT *
+                FROM MSkillChargeMasters
+                WHERE skill_masterid = '${skillId}'`;
+
+    return new Promise((resolve, reject) => {
+        db.all(sql, (error, rows) => {
+            if (error) {
+                console.log('Error when retrieving charge skill data:', error);
+                reject(null);
+            }
+            var data = [];
+            rows.forEach((row) => {
+                data.push(row);
+            });
+            resolve(data);
+        });
+    });
+}
+
 // app.get('/buff/charge/:skillId', (req, res) => {
 //     var skillId = req.params.skillId;
 //     var db = createConnection(JP_DATABASE);
@@ -208,24 +221,98 @@ async function getTextData(textId) {
     return new Promise((resolve, reject) => {
         db.get(sql, (error, row) => {
             if (error) {
-                console.log('Error when retrieving skill data');
-                reject(error);
+                console.log('Error when retrieving text data:', error);
+                reject(null);
             }
             resolve(row);
         });
     });
 }
 
-async function getSkillRecord(cardId) {
+// async function getSkillRecord(cardId) {
+app.get('/sr/:cardId', async (req, res) => {
+    var skillRecord;
+    
+    var cardName;
+    var cardDescription;
+    var cardType;
     var cardData;
-    var skillData;
-    var passiveBuffData;
-    var activeBuffData;
-    var chargeSkill;
-    var chargeBeforeBuffData;
-    var chargeAfterBuffData;
-}
+    var skillName;
+    var skillDescription;
+    var skillData = {};
+    var buffData = {};
+    var hasCharge = false;
+    var hasBurst = false;
 
+    var cardId = req.params.cardId;
+
+    cardData = await getCardData(cardId);
+
+    skillData['base'] = await getSkillData(cardData.skill_masterid);
+
+    cardType = cardData.type == 1 ? 'active' : 'passive';
+
+    Promise.all(
+        getTextData(cardData.text_name_id),
+        getTextData(cardData.text_comment_id),
+        getTextData(skillData.text_name_id),
+        getTextData(skillData.text_comment_id)
+    ).then(async (values) => {
+        cardName = values[0];
+        cardDescription = values[1];
+        skillName = values[2];
+        skillDescription = values[3];
+
+        resolve();
+    }).then(async () => {
+        if (cardType == 'active') {
+            buffData['base'] = await getActiveBuffs(cardId);
+            var chargeSkillData = await getChargeSkillData(skillData.skill_masterid);
+
+            if (chargeSkillData.length > 0) {
+                hasCharge = true;
+
+                return Promise.all(
+                    getSkillData(chargeSkillData.before_skill_masterid),
+                    getSkillData(chargeSkillData.after_skill_masterid)
+                ).then((values) => {
+                    skillData['before'] = values[0];
+                    skillData['after'] = values[1];
+
+                    resolve();
+                }).then(() => {
+                    return Promise.all(
+                        getActiveBuffs(skillData.before.skill_masterid),
+                        getActiveBuffs(skillData.after.skill_masterid)
+                    );
+                }).then((values) => {
+                    buffData['before'] = values[0];
+                    buffData['after'] = values[1];
+
+                    resolve();
+                });
+            }
+        } else {
+            buffData['base'] = await getPassiveBuffs(cardId);
+
+            resolve();
+        }
+    }).then(() => {
+        skillRecord = {
+            'cardName': cardName,
+            'cardDescription': cardDescription,
+            'cardData': cardData,
+            'skillName': skillName,
+            'skillDescription': skillDescription,
+            'skillData': skillData,
+            'buffData': buffData,
+            'hasCharge': hasCharge
+        };
+        
+        res.contentType('application/json');
+        res.send(JSON.stringify(skillRecord));
+    });
+});
 
 function createConnection(databaseFile) {
     var db = new sqlite3.Database(databaseFile, (error) => {

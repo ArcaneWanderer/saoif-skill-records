@@ -1,13 +1,12 @@
 import React from 'react';
 import '../css/App.css';
-import {loadCardOptions} from './script.js';
 import SkillRecordGridItem from './SkillRecordGridItem';
 
 class App extends React.Component {
     constructor(props) {
         super(props);
 
-        loadCardOptions().then((data) => {
+        this.loadCardOptions().then((data) => {
             this.state = { cards: data };
             this.initializeCardOptions();
         });
@@ -29,15 +28,29 @@ class App extends React.Component {
             );
             cardOptions.push(option);
         }
-        var selectedCard = this.state.cards[6].evolution_card_masterid;
+        var selectedCard = this.state.cards[178].evolution_card_masterid;
         this.setState({
             selected: selectedCard,
             cardOptions: cardOptions
         });
     }
     
-    loadSkillRecord() {
-        console.log(this.currentCard);
+    async loadCardOptions() {
+        return new Promise(function(resolve, reject) {
+            fetch('/en/card', {method: 'get'})
+                .then(function(response) {
+                    if (response.status !== 200) {
+                        console.log('Looks like there was a problem. Status Code: ' + response.status);
+                        return;
+                    }
+    
+                    return response.json();
+                }).then(function(data) {
+                    resolve(data);
+                }).catch(function(err) {
+                    console.log('Fetch Error :-S', err);
+                });
+        });
     }
 
     render() {

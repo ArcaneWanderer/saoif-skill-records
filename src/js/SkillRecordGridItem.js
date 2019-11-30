@@ -60,10 +60,10 @@ class SkillRecordGridItem extends React.Component {
         // Note: The addition to maxLevel is +/- depending on what form 
         // the skill record is first initialized in
         var maxLevel = this.state.maxLevel;
-        if (this.state.skillRecord.cardInfo.evolution_card_masterid > 0) {
+        if (this.state.skillRecord.cardData.evolution_card_masterid > 0) {
             maxLevel += 10;
             this.setState({
-                cardId: this.state.skillRecord.cardInfo.evolution_card_masterid,
+                cardId: this.state.skillRecord.cardData.evolution_card_masterid,
                 maxLevel: maxLevel
             }, () => {
                 this.updateSkillRecord();
@@ -74,7 +74,7 @@ class SkillRecordGridItem extends React.Component {
                 this.setState({ level: maxLevel });
             }
             this.setState({
-                cardId: this.state.skillRecord.cardInfo.base_card_masterid,
+                cardId: this.state.skillRecord.cardData.base_card_masterid,
                 maxLevel: maxLevel
             }, () => {
                 this.updateSkillRecord();

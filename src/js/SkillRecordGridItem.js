@@ -113,6 +113,19 @@ class SkillRecordGridItem extends React.Component {
         });
     }
 
+    componentDidMount() {
+        // Preload images
+        const image = new Image();
+        image.src = cardFrame1_1;
+        image.src = cardFrame2_1;
+        image.src = cardFrame3_1;
+        image.src = cardFrame4_1;
+        image.src = cardFrame1_2;
+        image.src = cardFrame2_2;
+        image.src = cardFrame3_2;
+        image.src = cardFrame4_2;
+    }
+
     componentDidUpdate(prevProps) {
         if (prevProps.cardId !== this.props.cardId) {
             this.setState({ cardImageLoaded: false });

@@ -34,7 +34,7 @@ class SkillRecordGridItem extends React.Component {
 
     handleChange(e) {
         var input = e.target.value;
-        if (isNaN(input) || input == '0' || input == '') {
+        if (isNaN(input) || input === '0' || input === '') {
             input = 1;
         } else {
             input = parseInt(input);
@@ -114,7 +114,7 @@ class SkillRecordGridItem extends React.Component {
     }
 
     componentDidUpdate(prevProps) {
-        if (prevProps.cardId != this.props.cardId) {
+        if (prevProps.cardId !== this.props.cardId) {
             this.setState({ cardImageLoaded: false });
             if (document.getElementById('card-image')) {
                 document.getElementById('card-image').style.display = 'none';
@@ -171,15 +171,19 @@ class SkillRecordGridItem extends React.Component {
         // Replace line breaks with HTML line breaks <br>
         description = description.replace(/\\n/g, '<br>');
 
+        var skillData;
+        var buff;
+        var buffRate;
+
         // TODO: Do something better about this duplicated code
         if (skillRecord.skillData.hasOwnProperty('before')) {
-            var skillData = skillRecord.skillData.before;
+            skillData = skillRecord.skillData.before;
 
             description = description.replace(`%SkillDamage ${skillData.skill_masterid}%`, skillData['bAtkRate'] / 100 + (level-1) + '%');
 
             if (skillRecord.buffData.before.length > 0) {
-                var buff = skillRecord.buffData.before[0];
-                var buffRate = buff.buffEffect.slope * (buff.buff_level + level - 1) + buff.buffEffect.intercept;
+                buff = skillRecord.buffData.before[0];
+                buffRate = buff.buffEffect.slope * (buff.buff_level + level - 1) + buff.buffEffect.intercept;
                 buffRate = (buffRate / 100) + '%';
                 description = description.replace(`%BuffRate ${skillData.skill_masterid}%`, buffRate);
                 description = description.replace(`%BuffTime ${skillData.skill_masterid}%`, buff.buff_time);
@@ -187,13 +191,13 @@ class SkillRecordGridItem extends React.Component {
         }
         
         if (skillRecord.skillData.hasOwnProperty('after')) {
-            var skillData = skillRecord.skillData.after;
+            skillData = skillRecord.skillData.after;
 
             description = description.replace(`%SkillDamage ${skillData.skill_masterid}%`, skillData['bAtkRate'] / 100 + (level-1) + '%');
 
             if (skillRecord.buffData.after.length > 0) {
-                var buff = skillRecord.buffData.after[0];
-                var buffRate = buff.buffEffect.slope * (buff.buff_level + level - 1) + buff.buffEffect.intercept;
+                buff = skillRecord.buffData.after[0];
+                buffRate = buff.buffEffect.slope * (buff.buff_level + level - 1) + buff.buffEffect.intercept;
                 buffRate = (buffRate / 100) + '%';
                 description = description.replace(`%BuffRate ${skillData.skill_masterid}%`, buffRate);
                 description = description.replace(`%BuffTime ${skillData.skill_masterid}%`, buff.buff_time);
@@ -205,7 +209,7 @@ class SkillRecordGridItem extends React.Component {
 
         // Get all the buff tags and store them in an array in the order that they are found
         // e.g. ["%BuffRate%", "%BuffTime%"]
-        var buffTags = description.match(/\%Buff.+?\%/g);
+        var buffTags = description.match(/%Buff.+?%/g);
 
         // If there are no buff tags, no need to map anything else
         if (buffTags == null) {
@@ -227,7 +231,7 @@ class SkillRecordGridItem extends React.Component {
         // Do one pass across the list of buffs and store them in a different array
         // Also store the durations of each buff
         for (var i = 0; i < buffList.length; i++) {
-            var buff = buffList[i];
+            buff = buffList[i];
             buffs.push(buff);
 
             if (buff.hasOwnProperty('buff_time')) {
@@ -293,17 +297,17 @@ class SkillRecordGridItem extends React.Component {
             var stars = [];
 
             for (var i = 0; i < this.state.skillRecord.cardData.rarity; i++) {
-                var star = <span key={i}><img width='25em' height='25em' src={starOn}></img></span>;
+                var star = <span key={i}><img width='25em' height='25em' src={starOn} alt=''></img></span>;
                 stars.push(star);
             }
             // If the skill record is not the transformed version
             if (this.state.skillRecord.cardData.evolution_card_masterid > 0) {
-                stars.push(<span key={this.state.skillRecord.cardData.rarity}><img width='25em' height='25em' src={starOff}></img></span>);
+                stars.push(<span key={this.state.skillRecord.cardData.rarity}><img width='25em' height='25em' src={starOff} alt=''></img></span>);
             }
 
             var imageSource;
 
-            if (this.state.skillRecord.cardData.evolution_card_masterid == 0) {
+            if (this.state.skillRecord.cardData.evolution_card_masterid === 0) {
                 switch (this.state.skillRecord.cardData.rarity) {
                     case 2:
                         imageSource = cardFrame1_2;
@@ -316,6 +320,8 @@ class SkillRecordGridItem extends React.Component {
                         break;
                     case 5:
                         imageSource = cardFrame4_2;
+                        break;
+                    default:
                         break;
                 }
             } else {
@@ -332,6 +338,8 @@ class SkillRecordGridItem extends React.Component {
                     case 4:
                         imageSource = cardFrame4_1;
                         break;
+                    default:
+                        break;
                 }
             }
 
@@ -339,12 +347,13 @@ class SkillRecordGridItem extends React.Component {
                 <img 
                     onLoad={ this.handleLoad.bind(this) }
                     id='card-image'
+                    alt=''
                     // style={{ display: this.state.cardImageLoaded ? "inline" : "none" }}
                     src={'https://raw.githubusercontent.com/Nayuta-Kani/SAOIF-Skill-Records-Database/master/srimages/sr_icon_l_' + (this.state.skillRecord.cardData.evolution_card_masterid > 0 ? this.state.skillRecord.cardData.evolution_card_masterid : this.state.skillRecord.cardData.card_masterid) + '.png'}>
                 </img>
             )
 
-            var cardBackground = <img src={imageSource}></img>;
+            var cardBackground = <img src={imageSource} alt=''></img>;
         }
 
         return (
@@ -357,14 +366,14 @@ class SkillRecordGridItem extends React.Component {
                 <br></br>
                 <div className="card-info">
                     <div className="card-type">
-                        <span>{ this.state.skillRecord.cardData.type == 1 ? "Sword Skill" : "Ability" }</span>
+                        <span>{ this.state.skillRecord.cardData.type === 1 ? "Sword Skill" : "Ability" }</span>
                     </div>
                     <p className="card-title">{ this.state.skillRecord.cardName }</p>
                     <div className="card-rarity">
                         { stars }
                     </div>
                     <div className="card-img">
-                        { this.state.cardImageLoaded ? "" : <img src={loadGif}></img>}
+                        { this.state.cardImageLoaded ? "" : <img src={loadGif} alt=''></img>}
                         { this.state.cardImageLoaded ? cardBackground : "" }
                         { cardImage }
                     </div>

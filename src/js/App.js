@@ -59,12 +59,14 @@ class App extends React.Component {
         if (this.state && this.state.selected) {
             app = (
                 <div id="app">
-                    <select id="card-select" value={ this.state.selected } onChange={ this.handleChange }>
+                    {/* <select id="card-select" value={ this.state.selected } onChange={ this.handleChange }>
                         { this.state.cardOptions }
                     </select>
                     <br></br>
     
-                    <SkillRecordGridItem id="currentCard" cardId={ this.state.selected }></SkillRecordGridItem>
+                    <SkillRecordGridItem id="currentCard" cardId={ this.state.selected }></SkillRecordGridItem> */}
+
+                    
                 </div>
             );
         } else {

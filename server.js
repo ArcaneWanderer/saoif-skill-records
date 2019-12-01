@@ -1,10 +1,12 @@
 const express = require('express');
 const path = require('path');
 const sqlite3 = require('sqlite3').verbose();
+const fetch = require('node-fetch');
 
 const app = express();
 const SERVER_HOST = process.env.OPENSHIFT_NODEJS_IP || '0.0.0.0';
 const SERVER_PORT = process.env.OPENSHIFT_NODEJS_PORT || 8080;
+const SERVER_URL = SERVER_HOST + ':' + SERVER_PORT;
 
 const JP_DATABASE = 'db/gamemaster.db3';
 const GLOBAL_DATABASE = 'db/gamemaster_fc.db3';
@@ -45,6 +47,49 @@ app.get('/:language/card', (req, res) => {
 
         res.contentType('application/json');
         res.send(JSON.stringify(data));
+    });
+});
+
+app.get('/:language/sr/', (req, res) => {
+    const language = req.params.language;
+    new Promise((resolve, reject) => {
+        fetch(`http://${SERVER_URL}/${language}/card`, {method: 'get'})
+            .then((response) => {
+                if (response.status !== 200) {
+                    console.log('Looks like there was a problem. Status Code: ' + response.status);
+                    reject();
+                }
+    
+                return response.json();
+            }).then((data) => {
+                resolve(data);
+            }).catch((err) => {
+                console.log('Fetch Error :-S', err);
+            });
+    }).then((data) => {
+        var skillRecordData = [];
+        return Promise.all(data.map((element) => {
+            return new Promise((resolve, reject) => {
+                fetch(`http://${SERVER_URL}/${language}/sr/${element.card_masterid}`, {method: 'get'})
+                    .then((response) => {
+                        if (response.status !== 200) {
+                            console.log('Looks like there was a problem. Status Code: ' + response.status);
+                            reject();
+                        }
+            
+                        return response.json();
+                    }).then((data) => {
+                        resolve(data);
+                    }).catch((err) => {
+                        console.log('Fetch Error :-S', err);
+                    });
+            });
+        }));
+    }).then((data) => {
+        res.contentType('application/json');
+        res.send(JSON.stringify(data));
+    }).catch((error) => {
+        console.log(error);
     });
 });
 

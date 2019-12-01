@@ -11,7 +11,8 @@
 }
 @media (min-width: 480px) {
     .card {
-        width: 25vw;
+        /* width: 25vw; */
+        /* width: 10vw; */
     }
 }
 
@@ -53,8 +54,8 @@
 }
 @media (min-width: 480px) {
     .card-img {
-        height: 25vw;
-        width: 25vw;
+        height: 15vw;
+        width: 15vw;
     }
 }
 

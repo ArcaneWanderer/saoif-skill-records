@@ -372,11 +372,11 @@ class SkillRecordGridItem extends React.Component {
         return (
             this.state && this.state.skillRecord &&
             <div className="card">
-                <div className="card-actions">
+                {/* <div className="card-actions">
                     <input type="number" placeholder="Level" min="1" max={ this.state.maxLevel } onChange={ this.handleChange.bind(this) } value={ this.state.level } onKeyDown={ this.blockKeyInput.bind(this) }></input>
                     <button onClick={ this.toggleTransform.bind(this) }>Transform</button>
                 </div>
-                <br></br>
+                <br></br> */}
                 <div className="card-info">
                     <div className="card-type">
                         <span>{ this.state.skillRecord.cardData.type === 1 ? "Sword Skill" : "Ability" }</span>
@@ -393,12 +393,10 @@ class SkillRecordGridItem extends React.Component {
                     <div className="card-details">
                         <p className="skill-name">
                             { this.state.skillRecord.skillName.replace(/\//g, ', ') }
-                            <span className="skill-level"><br></br>Lv. { this.state.level }</span>
+                            {/* <span className="skill-level"><br></br>Lv. { this.state.level }</span> */}
                         </p>
-                        {/* <p className="skill-description"> */}
-                        <p className="skill-description" dangerouslySetInnerHTML={{__html: this.state.skillDescription}}>
-                            {/* { this.state.skillDescription } */}
-                        </p>
+                        {/* <p className="skill-description" dangerouslySetInnerHTML={{__html: this.state.skillDescription}}>
+                        </p> */}
                         <div className="card-id-text">
                             <span>#{ this.state.skillRecord.cardData.card_masterid }</span>
                         </div>

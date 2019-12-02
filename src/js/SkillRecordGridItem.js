@@ -21,15 +21,10 @@ class SkillRecordGridItem extends React.Component {
             level: 1,
             maxLevel: 1,
             cardId: props.cardId,
-            skillRecord: null,
+            skillRecord: props.skillRecord ? props.skillRecord : null,
             skillDescription: '',
             cardImageLoaded: false
         };
-
-        this.loadSkillRecordData(props.cardId).then((data) => {
-            this.initializeLevel(data);
-            this.updateSkillRecord();
-        });
     }
 
     handleChange(e) {
@@ -86,9 +81,9 @@ class SkillRecordGridItem extends React.Component {
         // e.preventDefault();
     }
 
-    initializeLevel(skillRecord) {
+    initializeLevel(rarity) {
         var level = 1;
-        switch (skillRecord.cardData.rarity) {
+        switch (rarity) {
             case 5:
                 level = 80;
                 break;
@@ -124,6 +119,16 @@ class SkillRecordGridItem extends React.Component {
         image.src = cardFrame2_2;
         image.src = cardFrame3_2;
         image.src = cardFrame4_2;
+        
+        if (this.state.skillRecord) {
+            this.initializeLevel(this.state.skillRecord.cardData.rarity);
+            this.useSkillRecordData(this.state.skillRecord);
+        } else {
+            this.loadSkillRecordData(this.state.cardId).then((data) => {
+                this.initializeLevel(data.cardData.rarity);
+                this.updateSkillRecord();
+            });
+        }
     }
 
     componentDidUpdate(prevProps) {
@@ -157,6 +162,17 @@ class SkillRecordGridItem extends React.Component {
                 }).catch(function(err) {
                     console.log('Fetch Error :-S', err);
                 });
+        });
+    }
+
+    async useSkillRecordData(skillRecord) {
+        var description = skillRecord.skillDescription;
+
+        description = this.mapDescription(description, skillRecord, this.state.level);
+
+        this.setState({
+            skillRecord: skillRecord,
+            skillDescription: description
         });
     }
 

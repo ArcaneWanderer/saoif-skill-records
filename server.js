@@ -242,6 +242,10 @@ app.get('/:language/sr/:cardId', async (req, res) => {
 
     cardData = await getCardData(cardId);
 
+    if (!cardData) {
+        return;
+    }
+
     skillData['base'] = await getSkillData(cardData.skill_masterid);
 
     cardType = cardData.type == 1 ? 'active' : 'passive';
@@ -295,6 +299,7 @@ app.get('/:language/sr/:cardId', async (req, res) => {
     }).then(() => {
         skillRecord = {
             'cardName': cardName,
+            'characterName': cardName.split(']')[1].trim(),
             'cardDescription': cardDescription,
             'cardData': cardData,
             'skillName': skillName,

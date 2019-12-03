@@ -124,7 +124,7 @@ class App extends React.Component {
     render() {
         var app;
 
-        if (this.state && this.state.cards) {
+        if (this.state && this.state.cards && this.state.cards.length > 0) {
             var cardElements = this.filterCardOptions(this.state.cards);
             // console.log(cardElements);
             cardElements = cardElements.map((card) => {
@@ -174,7 +174,9 @@ class App extends React.Component {
         } else {
             app = (
                 <div id="app">
-                    Loading app...
+                    <div id="loading-text">
+                        Loading app...
+                    </div>
                     <select hidden id="card-select"></select>
                 </div>
             )

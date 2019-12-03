@@ -40,13 +40,31 @@
     font-family: 'SAO Font';
     text-align: center;
 }
-.filter-button:hover {
-    background-color: rgb(240, 240, 240);
-}
 .filter-button.active {
     background-color: rgb(211, 211, 211);
 }
 
+@media (min-width: 480px) {
+    .filter-button:hover {
+        background-color: rgb(240, 240, 240);
+    }
+}
+
 .filter-button input {
     display: none;
+}
+
+#loading-text {
+    display : flex;
+    align-items : center;
+    justify-content: center;
+    font-family: 'SAO Font';
+    font-size: 10vw;
+    height: 80%;
+}
+
+@media (min-width: 480px) {
+    #loading-text {
+        font-size: 5vw;
+    }
 }

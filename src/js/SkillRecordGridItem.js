@@ -395,7 +395,8 @@ class SkillRecordGridItem extends React.Component {
                 <br></br> */}
                 <div className="card-info">
                     <div className="card-type">
-                        <span>{ this.state.skillRecord.cardData.type === 1 ? "Sword Skill" : "Ability" }</span>
+                        {/* <span>{ this.state.skillRecord.cardData.type === 1 ? "Sword Skill" : "Ability" }</span> */}
+                        <span>{this.state.skillRecord.skillType}</span>
                     </div>
                     <p className="card-title">{ this.state.skillRecord.cardName }</p>
                     <div className="card-rarity">

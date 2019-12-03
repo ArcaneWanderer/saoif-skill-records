@@ -299,12 +299,25 @@ app.get('/:language/sr/:cardId', async (req, res) => {
             return Promise.resolve();
         }
     }).then(() => {
+        const skillTypes = {
+            0: "Ability",
+            1: "Sword Skill: 1H Sword",
+            2: "Sword Skill: 1H Rapier",
+            3: "Sword Skill: Shield",
+            4: "Sword Skill: 1H Club",
+            5: "Sword Skill: 2H Axe",
+            6: "Sword Skill: 2HSpear",
+            7: "Sword Skill: Bow",
+            9: "Sword Skill: 1H Dagger"
+        }
+
         skillRecord = {
             'cardName': cardName,
             'characterName': cardName.split(']')[1].trim(),
             'cardDescription': cardDescription,
             'cardData': cardData,
             'skillName': skillName,
+            'skillType': skillTypes[cardData.weapon_type],
             'skillDescription': skillDescription,
             'skillData': skillData,
             'buffData': buffData,

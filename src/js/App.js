@@ -10,27 +10,29 @@ class App extends React.Component {
 
         var filters = {};
         filters['rarity'] = [];
+        filters['skillType'] = [];
         filters['character'] = [];
         
         this.state = {
             cards: [],
-            rarityFour: false,
-            rarityThree: false,
-            rarityTwo: false,
-            rarityOne: false,
             filters: filters
         };
 
+        this.handleChange = this.handleChange.bind(this);
+    }
+
+    componentDidMount() {
         // this.loadCardOptions('en').then((data) => {
         //     // this.initializeCardOptions('en');
         //     this.setState({ cards: data });
         // });
+
         this.loadSkillRecordData('en').then((data) => {
             // this.initializeCardOptions('en');
             this.setState({ cards: data });
-        });
-
-        this.handleChange = this.handleChange.bind(this);
+        }).catch((error => {
+            console.log('Failed to initialize app.');
+        }));
     }
 
     handleChange(e) {
@@ -59,15 +61,16 @@ class App extends React.Component {
             fetch(`/${language}/sr`, {method: 'get'})
                 .then((response) => {
                     if (response.status !== 200) {
-                        console.log('Looks like there was a problem. Status Code: ' + response.status);
+                        console.log('Error when fetching skill record data. Status code:', response.status);
                         reject();
+                    } else {
+                        return response.json();
                     }
-        
-                    return response.json();
                 }).then((data) => {
                     resolve(data);
                 }).catch((err) => {
-                    console.log('Fetch Error :-S', err);
+                    console.log('Error when fetching skill record data.', err);
+                    reject(err);
                 });
         });
     }
@@ -77,47 +80,59 @@ class App extends React.Component {
             fetch(`/${language}/card`, {method: 'get'})
                 .then(function(response) {
                     if (response.status !== 200) {
-                        console.log('Looks like there was a problem. Status Code: ' + response.status);
+                        console.log('Error when fetching card options. Status code:', response.status);
                         reject();
+                    } else {
+                        return response.json();
                     }
-    
-                    return response.json();
                 }).then(function(data) {
                     resolve(data);
                 }).catch(function(err) {
-                    console.log('Fetch Error :-S', err);
+                    console.log('Error when fetching card options.', err);
+                    reject(err);
                 });
         });
     }
 
     filterCardOptions(cards) {
         var rarity = this.state.filters.rarity;
-        var character = ['Alice'];
+        var skillType = this.state.filters.skillType;
+        var character = [];
 
         return Immutable.List(cards).filter((card) => {
             var rarityFilter = true;
+            var skillTypeFilter = true;
             var characterFilter = true;
 
             if (rarity.length > 0) {
                 rarityFilter = rarity.some(value => card.cardData.rarity === value);
+            }
+
+            if (skillType.length > 0) {
+                skillTypeFilter = skillType.some(value => card.skillType === value);
             }
             
             if (character.length > 0) {
                 characterFilter = character.some(value => card.characterName === value);
             }
 
-            return [rarityFilter, characterFilter].every(filter => filter === true);
+            return [rarityFilter, skillTypeFilter, characterFilter].every(filter => filter === true);
         });
     }
 
     handleFilterChoice(e) {
-        console.log(e.target);
-        var rarity = parseInt(e.target.value);
         var filters = this.state.filters;
-        if (filters.rarity.includes(rarity)) {
-            filters.rarity = filters.rarity.filter(value => value !== rarity);
+        var filterName = e.target.name.replace('Filter', '');
+        var filter = e.target.value;
+
+        if (!isNaN(filter)) {
+            filter = parseInt(filter);
+        }
+        
+        if (filters[filterName].includes(filter)) {
+            filters[filterName] = filters[filterName].filter(value => value !== filter);
         } else {
-            filters.rarity.push(rarity);
+            filters[filterName].push(filter);
         }
         this.setState({ filters: filters });
     }
@@ -137,16 +152,15 @@ class App extends React.Component {
             })
             // .slice(0, 10);
 
-            console.log(this.state.filters);
-
             var rarityFilterButtons = [];
             for (var i = 1; i < 5; i++) {
                 var buttonClass = "filter-button" + (this.state.filters.rarity.includes(i) ? " active" : "");
                 rarityFilterButtons.push(
                     <label key={i} className={buttonClass}>
-                        {i} <img src={starOn} className="filter-star"></img>
+                        {i} <img src={starOn} className="filter-star" alt=""></img>
                         <input
                             type="checkbox"
+                            name="rarityFilter"
                             value={i}
                             checked={this.state.filters.rarity.includes({i})}
                             onChange={this.handleFilterChoice.bind(this)}
@@ -154,12 +168,38 @@ class App extends React.Component {
                         </input>
                     </label>
                 );
-            }
+            };
+            
+            const skillTypes = [
+                "Ability", "1H Sword", "1H Rapier", "Shield",
+                "1H Club", "2H Axe", "2H Spear", "Bow", "1H Dagger"
+            ];
+            var skillTypeRarityButtons = skillTypes.map((value) => {
+                var buttonClass = "filter-button" + (this.state.filters.skillType.includes(value) ? " active" : "");
+                return (
+                    <label key={value} className={buttonClass}>
+                        {value}
+                        <input
+                            type="checkbox"
+                            name="skillTypeFilter"
+                            value={value}
+                            checked={this.state.filters.rarity.includes({value})}
+                            onChange={this.handleFilterChoice.bind(this)}
+                        >
+                        </input>
+                    </label>
+                );
+            });
 
             app = (
                 <div id="app">
                     <div className="filter-group">
-                        {rarityFilterButtons}
+                        <div id="rarity-filter">
+                            {rarityFilterButtons}
+                        </div>
+                        <div id="skill-type-filter">
+                            {skillTypeRarityButtons}
+                        </div>
                     </div>
                     <div className="card-group">
                         {cardElements}

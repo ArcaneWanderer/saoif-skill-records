@@ -6,9 +6,18 @@ import Immutable from 'immutable';
 class App extends React.Component {
     constructor(props) {
         super(props);
+
+        var filters = {};
+        filters['rarity'] = [];
+        filters['character'] = [];
         
         this.state = {
-            cards: []
+            cards: [],
+            rarityFour: false,
+            rarityThree: false,
+            rarityTwo: false,
+            rarityOne: false,
+            filters: filters
         };
 
         // this.loadCardOptions('en').then((data) => {
@@ -81,8 +90,9 @@ class App extends React.Component {
     }
 
     filterCardOptions(cards) {
-        var rarity = [4];
+        var rarity = this.state.filters.rarity;
         var character = ['Alice'];
+
         return Immutable.List(cards).filter((card) => {
             var rarityFilter = true;
             var characterFilter = true;
@@ -99,29 +109,56 @@ class App extends React.Component {
         });
     }
 
+    handleFilterChoice(e) {
+        console.log(e.target);
+        var rarity = parseInt(e.target.value);
+        var filters = this.state.filters;
+        if (filters.rarity.includes(rarity)) {
+            filters.rarity = filters.rarity.filter(value => value !== rarity);
+        } else {
+            filters.rarity.push(rarity);
+        }
+        this.setState({ filters: filters });
+    }
+
     render() {
         var app;
 
         if (this.state && this.state.cards) {
             var cardElements = this.filterCardOptions(this.state.cards);
+            // console.log(cardElements);
             cardElements = cardElements.map((card) => {
                 return <SkillRecordGridItem
-                    key={card.card_masterid}
+                    key={card.cardData.card_masterid}
                     // cardId={card.evolution_masterid}
                     skillRecord={card}
                 ></SkillRecordGridItem>
             })
             // .slice(0, 10);
 
+            console.log(this.state.filters);
+
+            var rarityFilterButtons = [];
+            for (var i = 1; i < 5; i++) {
+                var buttonClass = "filter-button" + (this.state.filters.rarity.includes(i) ? " active" : "");
+                rarityFilterButtons.push(
+                    <label key={i} className={buttonClass}>
+                        {i} *
+                        <input
+                            type="checkbox"
+                            value={i}
+                            checked={this.state.filters.rarity.includes({i})}
+                            onChange={this.handleFilterChoice.bind(this)}
+                        >
+                        </input>
+                    </label>
+                );
+            }
+
             app = (
                 <div id="app">
-                    <div>
-                        <span className="filter-button">
-                            <label>
-                                4*
-                                <input type="checkbox"></input>
-                            </label>
-                        </span>
+                    <div className="filter-group">
+                        {rarityFilterButtons}
                     </div>
                     <div className="card-group">
                         {cardElements}
@@ -132,8 +169,6 @@ class App extends React.Component {
                     <br></br>
     
                     <SkillRecordGridItem id="currentCard" cardId={ this.state.selected }></SkillRecordGridItem> */}
-
-
                 </div>
             );
         } else {

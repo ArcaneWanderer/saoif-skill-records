@@ -3,3 +3,50 @@
     margin: 0;
     vertical-align: top;
 }
+
+.filter-group {
+    padding: 1em;
+    margin: 1em;
+    box-shadow:
+    0 10px 25px -15px rgba(0, 0, 0, .5),
+    0 -10px 25px -15px rgba(0, 0, 0, .5);
+    display: flex;
+    justify-content: center;
+    flex-flow: row wrap;
+}
+.filter-group .filter-button {
+    border-width: 0px;
+    border-right-width: 0.5px;
+    border-style: solid;
+    border-color: gray;
+}
+.filter-group .filter-button:first-child {
+    border-radius: 5px 0 0 5px;
+}
+.filter-group .filter-button:last-child {
+    border-radius: 0 5px 5px 0;
+    border-right-width: 0px;
+}
+
+@media (min-width: 480px) {
+    .filter-group .filter-button {
+        border-right-width: 0px;
+    }
+}
+
+.filter-button {
+    background-color: rgb(255, 255, 255);
+    padding: 1em 2em;
+    font-family: 'SAO Font';
+    text-align: center;
+}
+.filter-button:hover {
+    background-color: rgb(240, 240, 240);
+}
+.filter-button.active {
+    background-color: rgb(211, 211, 211);
+}
+
+.filter-button input {
+    display: none;
+}

@@ -38,6 +38,7 @@ app.get('/:language/card', (req, res) => {
     db.all(sql, (error, rows) => {
         if (error) { 
             console.log('Error when retrieving card options:', error);
+            res.status(500).json({ error: error.toString() });
         }
 
         var data = [];
@@ -56,7 +57,7 @@ app.get('/:language/sr/', (req, res) => {
         fetch(`http://${SERVER_URL}/${language}/card`, {method: 'get'})
             .then((response) => {
                 if (response.status !== 200) {
-                    console.log('Looks like there was a problem. Status Code: ' + response.status);
+                    console.log('Error when fetching card data. Status code:', response.status);
                     reject();
                 }
     
@@ -64,7 +65,7 @@ app.get('/:language/sr/', (req, res) => {
             }).then((data) => {
                 resolve(data);
             }).catch((err) => {
-                console.log('Fetch Error :-S', err);
+                console.log('Fetch error:', err);
             });
     }).then((data) => {
         var skillRecordData = [];
@@ -73,7 +74,7 @@ app.get('/:language/sr/', (req, res) => {
                 fetch(`http://${SERVER_URL}/${language}/sr/${element.card_masterid}`, {method: 'get'})
                     .then((response) => {
                         if (response.status !== 200) {
-                            console.log('Looks like there was a problem. Status Code: ' + response.status);
+                            console.log('Error when fetching skill record data. Status code:', response.status);
                             reject();
                         }
             
@@ -81,7 +82,7 @@ app.get('/:language/sr/', (req, res) => {
                     }).then((data) => {
                         resolve(data);
                     }).catch((err) => {
-                        console.log('Fetch Error :-S', err);
+                        console.log('Fetch error:', err);
                     });
             });
         }));
@@ -90,6 +91,7 @@ app.get('/:language/sr/', (req, res) => {
         res.send(JSON.stringify(data));
     }).catch((error) => {
         console.log(error);
+        res.status(500).json({ error: error.toString() });
     });
 });
 

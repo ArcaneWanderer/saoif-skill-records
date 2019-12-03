@@ -2,6 +2,7 @@ import React from 'react';
 import '../css/App.css';
 import SkillRecordGridItem from './SkillRecordGridItem';
 import Immutable from 'immutable';
+import starOn from '../img/UI_icon_status_rare_on.png';
 
 class App extends React.Component {
     constructor(props) {
@@ -143,7 +144,7 @@ class App extends React.Component {
                 var buttonClass = "filter-button" + (this.state.filters.rarity.includes(i) ? " active" : "");
                 rarityFilterButtons.push(
                     <label key={i} className={buttonClass}>
-                        {i} *
+                        {i} <img src={starOn} className="filter-star"></img>
                         <input
                             type="checkbox"
                             value={i}

@@ -7,12 +7,9 @@
 .filter-group {
     padding: 1em;
     margin: 1em;
-    box-shadow:
-    0 10px 25px -15px rgba(0, 0, 0, .5),
-    0 -10px 25px -15px rgba(0, 0, 0, .5);
     display: flex;
     justify-content: center;
-    flex-flow: row wrap;
+    flex-flow: row nowrap;
 }
 .filter-group .filter-button {
     border-width: 0px;
@@ -21,10 +18,10 @@
     border-color: gray;
 }
 .filter-group .filter-button:first-child {
-    border-radius: 5px 0 0 5px;
+    border-radius: 20px 0 0 20px;
 }
 .filter-group .filter-button:last-child {
-    border-radius: 0 5px 5px 0;
+    border-radius: 0 20px 20px 0;
     border-right-width: 0px;
 }
 
@@ -35,16 +32,24 @@
 }
 
 .filter-button {
-    background-color: rgb(255, 255, 255);
-    padding: 1em 2em;
+    background-color: rgb(255, 255, 255, 0.9);
+    padding: 1.5em 2em;
     font-family: 'SAO Font';
     text-align: center;
+    white-space: nowrap;
+    box-shadow:
+    0 10px 25px -15px rgba(0, 0, 0, .5),
+    0 -10px 25px -15px rgba(0, 0, 0, .5);
 }
 .filter-button.active {
     background-color: rgb(211, 211, 211);
 }
 
 @media (min-width: 480px) {
+    .filter-button {
+        font-size: 1.25em;
+        padding: 1em 2em;
+    }
     .filter-button:hover {
         background-color: rgb(240, 240, 240);
     }
@@ -66,5 +71,17 @@
 @media (min-width: 480px) {
     #loading-text {
         font-size: 5vw;
+    }
+}
+
+.filter-star {
+    width: 1em;
+    height: 1em;
+}
+
+@media (min-width: 480px) {
+    .filter-star {
+        /* width: 1em;
+        height: 1em; */
     }
 }

@@ -3,12 +3,27 @@ body {
 }
 
 #app {
-    /* display: flex; */
-    /* flex-wrap: wrap; */
-    /* justify-content: center; */
-    /* align-items : center; */
-    /* height: 100%; */
-    /* width: 100%; */
+}
+
+.loading-app {
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: column;
+    justify-content: center;
+    align-items : center;
+    height: 100%;
+    width: 100%;
+}
+.loading-app img {
+    width: 50vw;
+    height: 50vw;
+}
+
+@media (min-width: 480px) {
+    .loading-app img {
+        width: 20vw;
+        height: 20vw;
+    }
 }
 
 .card-group {

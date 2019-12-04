@@ -244,11 +244,10 @@ class App extends React.Component {
             );
         } else {
             app = (
-                <div id="app">
+                <div id="app" className="loading-app">
                     <div id="loading-text">
                         Loading app...
-                        <div id="card-loading-text">
-                            {/* Loading more skill records... */}
+                        <div>
                             <img src={loadGif} alt=""></img>
                         </div>
                     </div>

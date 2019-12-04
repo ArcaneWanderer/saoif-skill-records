@@ -1,10 +1,12 @@
 const express = require('express');
 const path = require('path');
 const sqlite3 = require('sqlite3').verbose();
+const fetch = require('node-fetch');
 
 const app = express();
 const SERVER_HOST = process.env.OPENSHIFT_NODEJS_IP || '0.0.0.0';
 const SERVER_PORT = process.env.OPENSHIFT_NODEJS_PORT || 8080;
+const SERVER_URL = SERVER_HOST + ':' + SERVER_PORT;
 
 const JP_DATABASE = 'db/gamemaster.db3';
 const GLOBAL_DATABASE = 'db/gamemaster_fc.db3';
@@ -36,6 +38,7 @@ app.get('/:language/card', (req, res) => {
     db.all(sql, (error, rows) => {
         if (error) { 
             console.log('Error when retrieving card options:', error);
+            res.status(500).json({ error: error.toString() });
         }
 
         var data = [];
@@ -48,6 +51,36 @@ app.get('/:language/card', (req, res) => {
     });
 });
 
+app.get('/:language/sr/', async (req, res) => {
+    const language = req.params.language;
+    new Promise((resolve, reject) => {
+        fetch(`http://${SERVER_URL}/${language}/card`, {method: 'get'})
+            .then((response) => {
+                if (response.status !== 200) {
+                    console.log('Error when fetching card data. Status code:', response.status);
+                    reject();
+                } else {
+                    return response.json();
+                }
+            }).then((data) => {
+                resolve(data);
+            }).catch((err) => {
+                console.log('Error when fetching card data.', err);
+                reject(err);
+            });
+    }).then((data) => {
+        return Promise.all(data.map((element) => {
+            return getSkillRecordData(element.card_masterid, language);
+        }));
+    }).then((data) => {
+        res.contentType('application/json');
+        res.send(JSON.stringify(data));
+    }).catch((error) => {
+        console.log(error);
+        res.status(500).json({ error: error.toString() });
+    });
+});
+
 async function getCardData(cardId) {
     const sql = `SELECT *
                 FROM MCardMasters
@@ -57,9 +90,10 @@ async function getCardData(cardId) {
         db.get(sql, (error, row) => {
             if (error) {
                 console.log('Error when retrieving card data:', error);
-                reject(null);
+                reject(error);
+            } else {
+                resolve(row);
             }
-            resolve(row);
         });
     });
 };
@@ -73,9 +107,10 @@ async function getSkillData(skillId) {
         db.get(sql, (error, row) => {
             if (error) {
                 console.log('Error when retrieving skill data:', error);
-                reject(null);
+                reject(error);
+            } else {
+                resolve(row);
             }
-            resolve(row);
         });
     });
 }
@@ -89,13 +124,14 @@ async function getPassiveBuffs(cardId) {
         db.all(sql, (error, rows) => {
             if (error) {
                 console.log('Error when retrieving passive buffs data:', error);
-                reject(null);
+                reject(error);
+            } else {
+                var data = [];
+                rows.forEach((row) => {
+                    data.push(row);
+                });
+                resolve(data);
             }
-            var data = [];
-            rows.forEach((row) => {
-                data.push(row);
-            });
-            resolve(data);
         });
     });
 }
@@ -110,13 +146,14 @@ async function getActiveBuffs(skillId) {
         db.all(sql, (error, rows) => {
             if (error) {
                 console.log('Error when retrieving active buffs data:', error);
-                reject(null);
+                reject(error);
+            } else {
+                var data = [];
+                rows.forEach((row) => {
+                    data.push(row);
+                });
+                resolve(data);
             }
-            var data = [];
-            rows.forEach((row) => {
-                data.push(row);
-            });
-            resolve(data);
         });
     }).then(async (data) => {
         buffs = data;
@@ -130,9 +167,10 @@ async function getActiveBuffs(skillId) {
                 db.get(sql, (error, row) => {
                     if (error) {
                         console.log('Error when retrieving buff effect data:', error);
-                        reject(null);
+                        reject(error);
+                    } else {
+                        resolve(row);
                     }
-                    resolve(row);
                 });
             });
         })).then((data) => {
@@ -155,9 +193,10 @@ async function getChargeSkillData(skillId) {
         db.get(sql, (error, row) => {
             if (error) {
                 console.log('Error when retrieving charge skill data:', error);
-                reject(null);
+                reject(error);
+            } else {
+                resolve(row);
             }
-            resolve(row);
         });
     });
 }
@@ -171,14 +210,15 @@ async function getTextData(textId, language) {
         db.get(sql, (error, row) => {
             if (error) {
                 console.log('Error when retrieving text data:', error);
-                reject(null);
+                reject(error);
+            } else {
+                resolve(row.data);
             }
-            resolve(row.data);
         });
     });
 }
 
-app.get('/:language/sr/:cardId', async (req, res) => {
+async function getSkillRecordData(cardId, language) {
     var skillRecord;
     
     var cardName;
@@ -192,16 +232,17 @@ app.get('/:language/sr/:cardId', async (req, res) => {
     var hasCharge = false;
     var hasBurst = false;
 
-    const cardId = req.params.cardId;
-    const language = req.params.language;
-
     cardData = await getCardData(cardId);
+
+    if (!cardData) {
+        return;
+    }
 
     skillData['base'] = await getSkillData(cardData.skill_masterid);
 
     cardType = cardData.type == 1 ? 'active' : 'passive';
 
-    Promise.all([
+    return Promise.all([
         getTextData(cardData.text_name_id, language),
         getTextData(cardData.text_comment_id, language),
         getTextData(skillData.base.text_name_id, language),
@@ -248,22 +289,49 @@ app.get('/:language/sr/:cardId', async (req, res) => {
             return Promise.resolve();
         }
     }).then(() => {
+        const skillTypes = {
+            0: "Ability",
+            1: "1H Sword",
+            2: "1H Rapier",
+            3: "Shield",
+            4: "1H Club",
+            5: "2H Axe",
+            6: "2H Spear",
+            7: "Bow",
+            9: "1H Dagger"
+        }
+
         skillRecord = {
             'cardName': cardName,
+            'characterName': cardName.split(']')[1].trim(),
             'cardDescription': cardDescription,
             'cardData': cardData,
             'skillName': skillName,
+            'skillType': skillTypes[cardData.weapon_type],
             'skillDescription': skillDescription,
             'skillData': skillData,
             'buffData': buffData,
             'hasCharge': hasCharge
         };
-        
-        res.contentType('application/json');
-        res.send(JSON.stringify(skillRecord));
+
+        return skillRecord;
     }).catch((error) => {
         console.log('Error:', error);
+        return null;
     });
+}
+
+app.get('/:language/sr/:cardId', async (req, res) => {
+    const cardId = req.params.cardId;
+    const language = req.params.language;
+    const skillRecord = await getSkillRecordData(cardId, language);
+
+    if (skillRecord) {
+        res.contentType('application/json');
+        res.send(JSON.stringify(skillRecord));
+    } else {
+        res.status(500);
+    }
 });
 
 function createConnection(databaseFile) {

@@ -21,15 +21,10 @@ class SkillRecordGridItem extends React.Component {
             level: 1,
             maxLevel: 1,
             cardId: props.cardId,
-            skillRecord: null,
+            skillRecord: props.skillRecord ? props.skillRecord : null,
             skillDescription: '',
             cardImageLoaded: false
         };
-
-        this.loadSkillRecordData(props.cardId).then((data) => {
-            this.initializeLevel(data);
-            this.updateSkillRecord();
-        });
     }
 
     handleChange(e) {
@@ -86,9 +81,9 @@ class SkillRecordGridItem extends React.Component {
         // e.preventDefault();
     }
 
-    initializeLevel(skillRecord) {
+    initializeLevel(rarity) {
         var level = 1;
-        switch (skillRecord.cardData.rarity) {
+        switch (rarity) {
             case 5:
                 level = 80;
                 break;
@@ -124,6 +119,16 @@ class SkillRecordGridItem extends React.Component {
         image.src = cardFrame2_2;
         image.src = cardFrame3_2;
         image.src = cardFrame4_2;
+        
+        if (this.state.skillRecord) {
+            this.initializeLevel(this.state.skillRecord.cardData.rarity);
+            this.useSkillRecordData(this.state.skillRecord);
+        } else {
+            this.loadSkillRecordData(this.state.cardId).then((data) => {
+                this.initializeLevel(data.cardData.rarity);
+                this.updateSkillRecord();
+            });
+        }
     }
 
     componentDidUpdate(prevProps) {
@@ -157,6 +162,17 @@ class SkillRecordGridItem extends React.Component {
                 }).catch(function(err) {
                     console.log('Fetch Error :-S', err);
                 });
+        });
+    }
+
+    async useSkillRecordData(skillRecord) {
+        var description = skillRecord.skillDescription;
+
+        description = this.mapDescription(description, skillRecord, this.state.level);
+
+        this.setState({
+            skillRecord: skillRecord,
+            skillDescription: description
         });
     }
 
@@ -372,14 +388,15 @@ class SkillRecordGridItem extends React.Component {
         return (
             this.state && this.state.skillRecord &&
             <div className="card">
-                <div className="card-actions">
+                {/* <div className="card-actions">
                     <input type="number" placeholder="Level" min="1" max={ this.state.maxLevel } onChange={ this.handleChange.bind(this) } value={ this.state.level } onKeyDown={ this.blockKeyInput.bind(this) }></input>
                     <button onClick={ this.toggleTransform.bind(this) }>Transform</button>
                 </div>
-                <br></br>
+                <br></br> */}
                 <div className="card-info">
                     <div className="card-type">
-                        <span>{ this.state.skillRecord.cardData.type === 1 ? "Sword Skill" : "Ability" }</span>
+                        {/* <span>{ this.state.skillRecord.cardData.type === 1 ? "Sword Skill" : "Ability" }</span> */}
+                        <span>{this.state.skillRecord.skillType}</span>
                     </div>
                     <p className="card-title">{ this.state.skillRecord.cardName }</p>
                     <div className="card-rarity">
@@ -393,12 +410,10 @@ class SkillRecordGridItem extends React.Component {
                     <div className="card-details">
                         <p className="skill-name">
                             { this.state.skillRecord.skillName.replace(/\//g, ', ') }
-                            <span className="skill-level"><br></br>Lv. { this.state.level }</span>
+                            {/* <span className="skill-level"><br></br>Lv. { this.state.level }</span> */}
                         </p>
-                        {/* <p className="skill-description"> */}
-                        <p className="skill-description" dangerouslySetInnerHTML={{__html: this.state.skillDescription}}>
-                            {/* { this.state.skillDescription } */}
-                        </p>
+                        {/* <p className="skill-description" dangerouslySetInnerHTML={{__html: this.state.skillDescription}}>
+                        </p> */}
                         <div className="card-id-text">
                             <span>#{ this.state.skillRecord.cardData.card_masterid }</span>
                         </div>

@@ -3,6 +3,7 @@ import '../css/App.css';
 import SkillRecordGridItem from './SkillRecordGridItem';
 import Immutable from 'immutable';
 import starOn from '../img/UI_icon_status_rare_on.png';
+import loadGif from '../img/oie_trans.gif';
 
 class App extends React.Component {
     constructor(props) {
@@ -15,10 +16,12 @@ class App extends React.Component {
         
         this.state = {
             cards: [],
-            filters: filters
+            filters: filters,
+            visibleItemsCount: 20
         };
 
         this.handleChange = this.handleChange.bind(this);
+        this.scrollLoad = this.scrollLoad.bind(this);
     }
 
     componentDidMount() {
@@ -33,6 +36,20 @@ class App extends React.Component {
         }).catch((error => {
             console.log('Failed to initialize app.');
         }));
+        
+        document.addEventListener('scroll', this.scrollLoad);
+    }
+
+    componentWillUnmount() {
+        document.removeEventListener('scroll', this.scrollLoad);
+    }
+
+    scrollLoad(event) {
+        if ((window.innerHeight + window.pageYOffset) >= document.body.offsetHeight) {
+            if (this.state && this.state.visibleItemsCount < this.state.cards.length) {
+                this.setState({ visibleItemsCount: this.state.visibleItemsCount + 20 });
+            }
+        }
     }
 
     handleChange(e) {
@@ -134,7 +151,9 @@ class App extends React.Component {
         } else {
             filters[filterName].push(filter);
         }
-        this.setState({ filters: filters });
+        this.setState({ filters: filters }, () => {
+            this.setState({ visibleItemsCount: 20 });
+        });
     }
 
     render() {
@@ -142,6 +161,7 @@ class App extends React.Component {
 
         if (this.state && this.state.cards && this.state.cards.length > 0) {
             var cardElements = this.filterCardOptions(this.state.cards);
+            const availableCardsCount = cardElements.size;
             // console.log(cardElements);
             cardElements = cardElements.map((card) => {
                 return <SkillRecordGridItem
@@ -149,8 +169,7 @@ class App extends React.Component {
                     // cardId={card.evolution_masterid}
                     skillRecord={card}
                 ></SkillRecordGridItem>
-            })
-            // .slice(0, 10);
+            }).slice(0, this.state.visibleItemsCount);
 
             var rarityFilterButtons = [];
             for (var i = 1; i < 5; i++) {
@@ -191,6 +210,16 @@ class App extends React.Component {
                 );
             });
 
+            var loadingIndicator;
+
+            if (this.state.visibleItemsCount < availableCardsCount) {
+                loadingIndicator = (
+                    <div id="card-loading-text">
+                        <img src={loadGif} alt=""></img>
+                    </div>
+                );
+            }
+
             app = (
                 <div id="app">
                     <div className="filter-group">
@@ -204,6 +233,7 @@ class App extends React.Component {
                     <div className="card-group">
                         {cardElements}
                     </div>
+                    {loadingIndicator}
                     {/* <select id="card-select" value={ this.state.selected } onChange={ this.handleChange }>
                         { this.state.cardOptions }
                     </select>
@@ -217,6 +247,10 @@ class App extends React.Component {
                 <div id="app">
                     <div id="loading-text">
                         Loading app...
+                        <div id="card-loading-text">
+                            {/* Loading more skill records... */}
+                            <img src={loadGif} alt=""></img>
+                        </div>
                     </div>
                     <select hidden id="card-select"></select>
                 </div>

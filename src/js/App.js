@@ -169,7 +169,7 @@ class App extends React.Component {
                     // cardId={card.evolution_masterid}
                     skillRecord={card}
                 ></SkillRecordGridItem>
-            }).slice(0, this.state.visibleItemsCount);
+            }).reverse().slice(0, this.state.visibleItemsCount);
 
             var rarityFilterButtons = [];
             for (var i = 1; i < 5; i++) {

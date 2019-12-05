@@ -3,6 +3,7 @@
     display: inline-block;
     margin: 1em;
     position: relative;
+    width: 80vw;
 }
 @media (min-width: 480px) {
     .card {

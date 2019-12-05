@@ -23,7 +23,9 @@ class App extends React.Component {
             filters: filters,
             visibleItemsCount: 20,
             characterList: [],
-            selectedCharacter: null
+            cardNameList: [],
+            selectedCharacter: null,
+            searchedCharacter: null
         };
 
         this.handleChange = this.handleChange.bind(this);
@@ -39,13 +41,16 @@ class App extends React.Component {
         this.loadSkillRecordData('en').then((data) => {
             // this.initializeCardOptions('en');
             var characterList = new Set();
+            var cardNameList = [];
             data.forEach((element) => {
                 characterList.add(element.characterName);
+                cardNameList.push(element.cardName);
             });
             // console.log([...characterList].sort());
             this.setState({
                 cards: data,
-                characterList: [...characterList].sort()
+                characterList: [...characterList].sort(),
+                cardNameList: cardNameList
             });
         }).catch((error => {
             console.log('Failed to initialize app.');
@@ -129,11 +134,13 @@ class App extends React.Component {
         var rarity = this.state.filters.rarity;
         var skillType = this.state.filters.skillType;
         var character = this.state.selectedCharacter;
+        var search = this.state.searchedCharacter;
 
         return Immutable.List(cards).filter((card) => {
             var rarityFilter = true;
             var skillTypeFilter = true;
             var characterFilter = true;
+            var searchFilter = true;
 
             if (rarity.length > 0) {
                 rarityFilter = rarity.some(value => card.cardData.rarity === value);
@@ -152,7 +159,12 @@ class App extends React.Component {
                 // console.log(character);
             }
 
-            return [rarityFilter, skillTypeFilter, characterFilter].every(filter => filter === true);
+            if (search != null) {
+                searchFilter = search.value === card.cardName;
+                // console.log(character);
+            }
+
+            return [rarityFilter, skillTypeFilter, characterFilter, searchFilter].every(filter => filter === true);
         });
     }
 
@@ -187,7 +199,10 @@ class App extends React.Component {
     }
 
     handleCharacterSearch(value) {
-        // TODO
+        this.setState({
+            searchedCharacter: value,
+            visibleItemsCount: 20
+        });
     }
 
     render() {
@@ -258,6 +273,10 @@ class App extends React.Component {
                 return { value: value, label: value};
             });
 
+            const cardNameList = this.state.cardNameList.map((value) => {
+                return { value: value, label: value};
+            });
+
             const customStyles = {
                 menu: (provided, state) => ({
                     ...provided,
@@ -296,6 +315,17 @@ class App extends React.Component {
                                     placeholder="Select a character..."
                                 />
                             </div>
+                        </div>
+                        <div id="character-search">
+                            <Select
+                                value={this.state.searchedCharacter}
+                                options={cardNameList}
+                                styles={customStyles}
+                                onChange={this.handleCharacterSearch.bind(this)}
+                                isClearable={true}
+                                isSearchable={true}
+                                placeholder="Search a skill record..."
+                            />
                         </div>
                     </div>
                     <div className="card-group">

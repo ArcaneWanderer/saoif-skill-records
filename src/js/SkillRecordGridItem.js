@@ -409,7 +409,7 @@ class SkillRecordGridItem extends React.Component {
                     </div>
                     <div className="card-details">
                         <p className="skill-name">
-                            { this.state.skillRecord.skillName.replace(/\//g, ', ') }
+                            { this.state.skillRecord.cardDescription.split('\\n').pop().replace(/\//g, ', ') }
                             <span className="skill-level"><br></br>Lv. { this.state.level }</span>
                         </p>
                         <p className="skill-description" dangerouslySetInnerHTML={{__html: this.state.skillDescription}}>

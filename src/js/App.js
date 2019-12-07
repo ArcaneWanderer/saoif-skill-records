@@ -46,7 +46,6 @@ class App extends React.Component {
                 characterList.add(element.characterName);
                 cardNameList.push(element.cardName);
             });
-            // console.log([...characterList].sort());
             this.setState({
                 cards: data,
                 characterList: [...characterList].sort(),
@@ -149,19 +148,13 @@ class App extends React.Component {
             if (skillType.length > 0) {
                 skillTypeFilter = skillType.some(value => card.skillType === value);
             }
-            
-            // if (character.length > 0) {
-            //     characterFilter = character.some(value => card.characterName === value);
-            // }
 
             if (character != null) {
                 characterFilter = character.value === card.characterName;
-                // console.log(character);
             }
 
             if (search != null) {
                 searchFilter = search.value === card.cardName;
-                // console.log(character);
             }
 
             return [rarityFilter, skillTypeFilter, characterFilter, searchFilter].every(filter => filter === true);
@@ -182,9 +175,7 @@ class App extends React.Component {
         } else {
             filters[filterName].push(filter);
         }
-        // this.setState({ filters: filters }, () => {
-        //     this.setState({ visibleItemsCount: 20 });
-        // });
+
         this.setState({
             filters: filters,
             visibleItemsCount: 20
@@ -211,7 +202,6 @@ class App extends React.Component {
         if (this.state && this.state.cards && this.state.cards.length > 0) {
             var cardElements = this.filterCardOptions(this.state.cards);
             const availableCardsCount = cardElements.size;
-            // console.log(cardElements);
             cardElements = cardElements.map((card) => {
                 return <SkillRecordGridItem
                     key={card.cardData.card_masterid}
@@ -287,11 +277,12 @@ class App extends React.Component {
                     border: state.isFocused ? 0 : 0,
                     boxShadow: state.isFocused ? 0 : 0,
                     '&:hover': {
-                        boxShadow: '0 10px 25px -15px rgba(0, 0, 0, .5), 0 -10px 25px -15px rgba(0, 0, 0, .5)',
+                        boxShadow: `0 10px 25px -15px rgba(0, 0, 0, .5), 
+                                    0 -10px 25px -15px rgba(0, 0, 0, .5)`,
                     },
                     backgroundColor: 'rgb(255, 255, 255, 0.9)',
                     padding: '0.5em',
-                }),
+                })
             }
 
             app = (
@@ -342,8 +333,8 @@ class App extends React.Component {
             );
         } else {
             app = (
-                <div id="app" className="loading-app">
-                    <div id="loading-text">
+                <div id="app" className="loading-app" style={{ height: "100%" }}>
+                    <div id="app-loading-text">
                         Loading app...
                         <div>
                             <img src={loadGif} alt=""></img>

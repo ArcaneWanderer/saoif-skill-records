@@ -1,7 +1,11 @@
 import React from 'react';
-import '../css/App.css';
-import SkillRecordGridItem from './SkillRecordGridItem';
+import Select from 'react-select';
 import Immutable from 'immutable';
+
+import SkillRecordGridItem from './SkillRecordGridItem';
+
+import '../css/App.css';
+
 import starOn from '../img/UI_icon_status_rare_on.png';
 import loadGif from '../img/oie_trans.gif';
 
@@ -17,7 +21,11 @@ class App extends React.Component {
         this.state = {
             cards: [],
             filters: filters,
-            visibleItemsCount: 20
+            visibleItemsCount: 20,
+            characterList: [],
+            cardNameList: [],
+            selectedCharacter: null,
+            searchedCharacter: null
         };
 
         this.handleChange = this.handleChange.bind(this);
@@ -32,7 +40,17 @@ class App extends React.Component {
 
         this.loadSkillRecordData('en').then((data) => {
             // this.initializeCardOptions('en');
-            this.setState({ cards: data });
+            var characterList = new Set();
+            var cardNameList = [];
+            data.forEach((element) => {
+                characterList.add(element.characterName);
+                cardNameList.push(element.cardName);
+            });
+            this.setState({
+                cards: data,
+                characterList: [...characterList].sort(),
+                cardNameList: cardNameList
+            });
         }).catch((error => {
             console.log('Failed to initialize app.');
         }));
@@ -114,12 +132,14 @@ class App extends React.Component {
     filterCardOptions(cards) {
         var rarity = this.state.filters.rarity;
         var skillType = this.state.filters.skillType;
-        var character = [];
+        var character = this.state.selectedCharacter;
+        var search = this.state.searchedCharacter;
 
         return Immutable.List(cards).filter((card) => {
             var rarityFilter = true;
             var skillTypeFilter = true;
             var characterFilter = true;
+            var searchFilter = true;
 
             if (rarity.length > 0) {
                 rarityFilter = rarity.some(value => card.cardData.rarity === value);
@@ -128,12 +148,16 @@ class App extends React.Component {
             if (skillType.length > 0) {
                 skillTypeFilter = skillType.some(value => card.skillType === value);
             }
-            
-            if (character.length > 0) {
-                characterFilter = character.some(value => card.characterName === value);
+
+            if (character != null) {
+                characterFilter = character.value === card.characterName;
             }
 
-            return [rarityFilter, skillTypeFilter, characterFilter].every(filter => filter === true);
+            if (search != null) {
+                searchFilter = search.value === card.cardName;
+            }
+
+            return [rarityFilter, skillTypeFilter, characterFilter, searchFilter].every(filter => filter === true);
         });
     }
 
@@ -151,8 +175,24 @@ class App extends React.Component {
         } else {
             filters[filterName].push(filter);
         }
-        this.setState({ filters: filters }, () => {
-            this.setState({ visibleItemsCount: 20 });
+
+        this.setState({
+            filters: filters,
+            visibleItemsCount: 20
+        });
+    }
+
+    handleCharacterSelection(value) {
+        this.setState({
+            selectedCharacter: value,
+            visibleItemsCount: 20
+        });
+    }
+
+    handleCharacterSearch(value) {
+        this.setState({
+            searchedCharacter: value,
+            visibleItemsCount: 20
         });
     }
 
@@ -162,7 +202,6 @@ class App extends React.Component {
         if (this.state && this.state.cards && this.state.cards.length > 0) {
             var cardElements = this.filterCardOptions(this.state.cards);
             const availableCardsCount = cardElements.size;
-            // console.log(cardElements);
             cardElements = cardElements.map((card) => {
                 return <SkillRecordGridItem
                     key={card.cardData.card_masterid}
@@ -220,14 +259,64 @@ class App extends React.Component {
                 );
             }
 
+            const characterList = this.state.characterList.map((value) => {
+                return { value: value, label: value};
+            });
+
+            const cardNameList = this.state.cardNameList.map((value) => {
+                return { value: value, label: value};
+            });
+
+            const customStyles = {
+                menu: (provided, state) => ({
+                    ...provided,
+                    backgroundColor: 'rgb(255, 255, 255, 0.9)'
+                }),
+                control: (provided, state) => ({
+                    ...provided,
+                    border: state.isFocused ? 0 : 0,
+                    boxShadow: state.isFocused ? 0 : 0,
+                    '&:hover': {
+                        boxShadow: `0 10px 25px -15px rgba(0, 0, 0, .5), 
+                                    0 -10px 25px -15px rgba(0, 0, 0, .5)`,
+                    },
+                    backgroundColor: 'rgb(255, 255, 255, 0.9)',
+                    padding: '0.5em',
+                })
+            }
+
             app = (
                 <div id="app">
                     <div className="filter-group">
-                        <div id="rarity-filter">
-                            {rarityFilterButtons}
-                        </div>
                         <div id="skill-type-filter">
                             {skillTypeRarityButtons}
+                        </div>
+                        <div>
+                            <div id="rarity-filter">
+                                {rarityFilterButtons}
+                            </div>
+                            <div id="character-filter">
+                                <Select
+                                    value={this.state.selectedCharacter}
+                                    options={characterList}
+                                    styles={customStyles}
+                                    onChange={this.handleCharacterSelection.bind(this)}
+                                    isClearable={true}
+                                    isSearchable={false}
+                                    placeholder="Select a character..."
+                                />
+                            </div>
+                        </div>
+                        <div id="character-search">
+                            <Select
+                                value={this.state.searchedCharacter}
+                                options={cardNameList}
+                                styles={customStyles}
+                                onChange={this.handleCharacterSearch.bind(this)}
+                                isClearable={true}
+                                isSearchable={true}
+                                placeholder="Search a skill record..."
+                            />
                         </div>
                     </div>
                     <div className="card-group">
@@ -244,8 +333,8 @@ class App extends React.Component {
             );
         } else {
             app = (
-                <div id="app" className="loading-app">
-                    <div id="loading-text">
+                <div id="app" className="loading-app" style={{ height: "100%" }}>
+                    <div id="app-loading-text">
                         Loading app...
                         <div>
                             <img src={loadGif} alt=""></img>

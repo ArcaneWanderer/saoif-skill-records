@@ -82,29 +82,33 @@ class SkillRecordGridItem extends React.Component {
     }
 
     initializeLevel(rarity) {
-        var level = 1;
-        switch (rarity) {
-            case 5:
-                level = 80;
-                break;
-            case 4:
-                level = 70;
-                break;
-            case 3:
-                level = 60;
-                break;
-            case 2:
-                level = 50;
-                break;
-            case 1:
-                level = 40;
-                break;
-            default:
-                level = 1;
-        }
-        this.setState({ 
-            maxLevel: level + 20,
-            level: level 
+        return new Promise((resolve, reject) => {
+            var level = 1;
+            switch (rarity) {
+                case 5:
+                    level = 80;
+                    break;
+                case 4:
+                    level = 70;
+                    break;
+                case 3:
+                    level = 60;
+                    break;
+                case 2:
+                    level = 50;
+                    break;
+                case 1:
+                    level = 40;
+                    break;
+                default:
+                    level = 1;
+            }
+            this.setState({ 
+                maxLevel: level + 20,
+                level: level 
+            }, () => {
+                resolve();
+            });
         });
     }
 
@@ -121,12 +125,16 @@ class SkillRecordGridItem extends React.Component {
         image.src = cardFrame4_2;
         
         if (this.state.skillRecord) {
-            this.initializeLevel(this.state.skillRecord.cardData.rarity);
-            this.useSkillRecordData(this.state.skillRecord);
+            this.initializeLevel(this.state.skillRecord.cardData.rarity)
+                .then(() => {
+                    this.useSkillRecordData(this.state.skillRecord);
+                });
         } else {
             this.loadSkillRecordData(this.state.cardId).then((data) => {
-                this.initializeLevel(data.cardData.rarity);
-                this.updateSkillRecord();
+                this.initializeLevel(data.cardData.rarity)
+                    .then(() => {
+                        this.updateSkillRecord();
+                    });
             });
         }
     }

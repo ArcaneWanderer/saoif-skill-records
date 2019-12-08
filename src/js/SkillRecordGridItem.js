@@ -263,7 +263,7 @@ class SkillRecordGridItem extends React.Component {
         // } else {
         //     buffList = skillRecord.activeBuffs.reverse();
         // }
-        buffList = skillRecord.buffData.base.reverse();
+        buffList = skillRecord.buffData.base;
 
         // Do one pass across the list of buffs and store them in a different array
         // Also store the durations of each buff

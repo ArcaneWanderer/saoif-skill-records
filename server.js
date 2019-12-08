@@ -117,7 +117,8 @@ async function getSkillData(skillId) {
 
 async function getPassiveBuffs(cardId) {
     const sql = `SELECT *
-                FROM MCardPowerupMasters
+                FROM (SELECT ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) row, *
+                        FROM MCardPowerupMasters)
                 WHERE card_masterid = '${cardId}'`;
 
     return new Promise((resolve, reject) => {

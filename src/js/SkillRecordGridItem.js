@@ -295,6 +295,10 @@ class SkillRecordGridItem extends React.Component {
                 }
                 buff = buffs.shift();
 
+                if (buff.define_name.includes('bAddSkillBuff')) {
+                    buff = buffs.shift();
+                }
+
                 // If it has buffEffects, then the buff is from an active skill
                 // Data from active and passive skills are stored differently for some reason
                 if (buff.hasOwnProperty('buffEffect')) {

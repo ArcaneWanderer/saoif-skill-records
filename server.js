@@ -81,6 +81,33 @@ app.get('/:language/sr/', async (req, res) => {
     });
 });
 
+app.get('/:language/sr/:identifier', async (req, res) => {
+    const identifier = req.params.identifier;
+
+    if (isNaN(identifier)) {
+        
+
+
+        res.sendFile(path.join(__dirname, 'build', 'skill_record.html'));
+    } else {
+        const cardId = identifier;
+        const language = req.params.language;
+        const skillRecord = await getSkillRecordData(cardId, language);
+    
+        if (skillRecord) {
+            res.contentType('application/json');
+            res.send(JSON.stringify(skillRecord));
+        } else {
+            res.status(500);
+        }
+    }
+
+});
+
+// app.get('/:en/sr/:characterName', (req, res) => {
+//     res.sendFile(path.join(__dirname, 'build', 'skill_record.html'));
+// });
+
 async function getCardData(cardId) {
     const sql = `SELECT *
                 FROM MCardMasters
@@ -321,19 +348,6 @@ async function getSkillRecordData(cardId, language) {
         return null;
     });
 }
-
-app.get('/:language/sr/:cardId', async (req, res) => {
-    const cardId = req.params.cardId;
-    const language = req.params.language;
-    const skillRecord = await getSkillRecordData(cardId, language);
-
-    if (skillRecord) {
-        res.contentType('application/json');
-        res.send(JSON.stringify(skillRecord));
-    } else {
-        res.status(500);
-    }
-});
 
 function createConnection(databaseFile) {
     var db = new sqlite3.Database(databaseFile, (error) => {

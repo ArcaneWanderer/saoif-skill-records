@@ -138,8 +138,9 @@ async function getPassiveBuffs(cardId) {
 }
 
 async function getActiveBuffs(skillId) {
-    var sql = `SELECT *
-                FROM MSkillBuffMasters
+    const sql = `SELECT *
+                FROM (SELECT ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) row, *
+                        FROM MSkillBuffMasters)
                 WHERE skill_masterid = '${skillId}'`;
 
     var buffs = [];

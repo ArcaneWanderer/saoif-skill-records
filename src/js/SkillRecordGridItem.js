@@ -207,6 +207,8 @@ class SkillRecordGridItem extends React.Component {
         
         // Replace line breaks with HTML line breaks <br>
         description = description.replace(/\\n/g, '<br>');
+        
+        description = description.replace(/\[/g, '\n[');
 
         var skillData;
         var buff;
@@ -279,6 +281,7 @@ class SkillRecordGridItem extends React.Component {
         // e.g. {"%BuffRate%": "23%"}
         // The stored value is already the computed one based on level ^
         var buffMappings = {};
+        const skipBuffs = ['bAddSkillBuff', 'bAddDamageRatePost'];
 
         // While there are still buff tags to be processed
         // Treat buffTags as a Queue data structure
@@ -295,8 +298,16 @@ class SkillRecordGridItem extends React.Component {
                 }
                 buff = buffs.shift();
 
-                if (buff.define_name.includes('bAddSkillBuff')) {
-                    buff = buffs.shift();
+                if (buff.hasOwnProperty('buffEffect')) {
+                    if (skipBuffs.includes(buff.buffEffect.define_name)) {
+                        buff = buffs.shift();
+                        durations.shift();
+                    }
+                } else {
+                    if (skipBuffs.includes(buff.define_name)) {
+                        buff = buffs.shift();
+                        durations.shift();
+                    }
                 }
 
                 // If it has buffEffects, then the buff is from an active skill

@@ -23,7 +23,8 @@ class SkillRecordGridItem extends React.Component {
             cardId: props.cardId,
             skillRecord: props.skillRecord ? props.skillRecord : null,
             skillDescription: '',
-            cardImageLoaded: false
+            cardImageLoaded: false,
+            cardImageFailed: false
         };
     }
 
@@ -48,6 +49,12 @@ class SkillRecordGridItem extends React.Component {
         if (!this.state.cardImageLoaded) {
             this.setState({ cardImageLoaded: true });
             document.getElementById('card-image').style.display = 'inline';
+        }
+    }
+
+    handleError(e) {
+        if (!this.state.cardImageFailed) {
+            this.setState({ cardImageFailed: true });
         }
     }
     
@@ -141,7 +148,10 @@ class SkillRecordGridItem extends React.Component {
 
     componentDidUpdate(prevProps) {
         if (prevProps.cardId !== this.props.cardId) {
-            this.setState({ cardImageLoaded: false });
+            this.setState({
+                cardImageLoaded: false,
+                cardImageFailed: false
+            });
             if (document.getElementById('card-image')) {
                 document.getElementById('card-image').style.display = 'none';
             }
@@ -398,6 +408,7 @@ class SkillRecordGridItem extends React.Component {
             var cardImage = (
                 <img 
                     onLoad={ this.handleLoad.bind(this) }
+                    onError={ this.handleError.bind(this) }
                     id='card-image'
                     alt=''
                     // style={{ display: this.state.cardImageLoaded ? "inline" : "none" }}
@@ -426,7 +437,7 @@ class SkillRecordGridItem extends React.Component {
                         { stars }
                     </div>
                     <div className="card-img">
-                        { this.state.cardImageLoaded ? "" : <img src={loadGif} alt=''></img>}
+                        { this.state.cardImageLoaded || this.state.cardImageFailed ? "" : <img src={loadGif} alt=''></img>}
                         { this.state.cardImageLoaded ? cardBackground : "" }
                         { cardImage }
                     </div>

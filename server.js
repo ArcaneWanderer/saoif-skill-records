@@ -33,7 +33,7 @@ app.get('/:language/card', (req, res) => {
                 FROM MCardMasters
                 INNER JOIN textmaster_${language}.MTextMasterS
                 ON text_name_id = id
-                WHERE data LIKE "[%" AND rarity = max_rarity - 1`;
+                WHERE data LIKE "[%" AND rarity = max_rarity`;
 
     db.all(sql, (error, rows) => {
         if (error) { 

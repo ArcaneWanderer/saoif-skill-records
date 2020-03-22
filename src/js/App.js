@@ -37,9 +37,20 @@ class App extends React.Component {
         //     // this.initializeCardOptions('en');
         //     this.setState({ cards: data });
         // });
+        let languageParam = this.props.match.params.language;
+        let language = languageParam;
 
-        this.loadSkillRecordData('en').then((data) => {
-            // this.initializeCardOptions('en');
+        if (languageParam === 'ja') {
+            language = 'jp';
+        } else if (languageParam === 'cn' || languageParam === 'zh') {
+            language = 'tw';
+        } else if (languageParam === 'sk') {
+            language = 'ko';
+        } else if (!['jp', 'en', 'tw', 'ko'].includes(languageParam) || languageParam === undefined) {
+            language = 'en';
+        }
+
+        this.loadSkillRecordData(language).then((data) => {
             var characterList = new Set();
             var cardNameList = [];
             data.forEach((element) => {
@@ -50,6 +61,8 @@ class App extends React.Component {
                 cards: data,
                 characterList: [...characterList].sort(),
                 cardNameList: cardNameList
+            }, () => {
+                console.log(this.state.cards);
             });
         }).catch((error => {
             console.log('Failed to initialize app.');

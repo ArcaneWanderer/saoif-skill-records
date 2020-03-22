@@ -24,8 +24,8 @@ app.get('/', (req, res) => {
 const db = createConnection(JP_DATABASE);
 db.run(`ATTACH DATABASE '${TEXT_DATABASE_JP}' AS textmaster_jp`);
 db.run(`ATTACH DATABASE '${TEXT_DATABASE_EN}' AS textmaster_en`);
-// db.run(`ATTACH DATABASE '${TEXT_DATABASE_KO}' AS textmaster_ko`);
-// db.run(`ATTACH DATABASE '${TEXT_DATABASE_TW}' AS textmaster_tw`);
+db.run(`ATTACH DATABASE '${TEXT_DATABASE_KO}' AS textmaster_ko`);
+db.run(`ATTACH DATABASE '${TEXT_DATABASE_TW}' AS textmaster_tw`);
 
 app.get('/:language/card', (req, res) => {
     const language = req.params.language;
@@ -51,24 +51,35 @@ app.get('/:language/card', (req, res) => {
     });
 });
 
+function fetchCardData(language) {
+    const sql = `SELECT card_masterid, data, evolution_card_masterid
+                FROM MCardMasters
+                INNER JOIN textmaster_${language}.MTextMasters
+                ON text_name_id = id
+                WHERE data LIKE "${language === 'en' ? '[' : '【'}%" AND rarity = max_rarity`;
+
+    return new Promise((resolve, reject) => {
+        db.all(sql, (error, rows) => {
+            if (error) { 
+                console.log('Error when retrieving card options:', error);
+                reject();
+            }
+
+            console.log(rows);
+
+            var data = [];
+            rows.forEach((row) => {
+                data.push(row);
+            });
+
+            resolve(data);
+        });
+    });
+}
+
 app.get('/:language/sr/', async (req, res) => {
     const language = req.params.language;
-    new Promise((resolve, reject) => {
-        fetch(`http://${SERVER_URL}/${language}/card`, {method: 'get'})
-            .then((response) => {
-                if (response.status !== 200) {
-                    console.log('Error when fetching card data. Status code:', response.status);
-                    reject();
-                } else {
-                    return response.json();
-                }
-            }).then((data) => {
-                resolve(data);
-            }).catch((err) => {
-                console.log('Error when fetching card data.', err);
-                reject(err);
-            });
-    }).then((data) => {
+    fetchCardData(language).then((data) => {
         return Promise.all(data.map((element) => {
             return getSkillRecordData(element.card_masterid, language);
         }));
@@ -303,9 +314,16 @@ async function getSkillRecordData(cardId, language) {
             9: "1H Dagger"
         }
 
+        let delimiter;
+        if (language === 'en') {
+            delimiter = ']';
+        } else {
+            delimiter = '】';
+        }
+
         skillRecord = {
             'cardName': cardName,
-            'characterName': cardName.split(']')[1].trim(),
+            'characterName': cardName.split(delimiter)[1].trim(),
             'cardDescription': cardDescription,
             'cardData': cardData,
             'skillName': skillName,

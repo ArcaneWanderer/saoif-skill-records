@@ -65,8 +65,6 @@ function fetchCardData(language) {
                 reject();
             }
 
-            console.log(rows);
-
             var data = [];
             rows.forEach((row) => {
                 data.push(row);

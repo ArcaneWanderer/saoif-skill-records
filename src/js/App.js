@@ -9,6 +9,16 @@ import '../css/App.css';
 import starOn from '../img/UI_icon_status_rare_on.png';
 import loadGif from '../img/oie_trans.gif';
 
+import abilityDark from '../img/weapon/UI_icon_status_ability.png';
+import axeDark from '../img/weapon/UI_icon_status_ax.png';
+import bowDark from '../img/weapon/UI_icon_status_bow.png';
+import daggerDark from '../img/weapon/UI_icon_status_dagger.png';
+import maceDark from '../img/weapon/UI_icon_status_mace.png';
+import shieldDark from '../img/weapon/UI_icon_status_shield.png';
+import rapierDark from '../img/weapon/UI_icon_status_slendersword.png';
+import spearDark from '../img/weapon/UI_icon_status_spear.png';
+import swordDark from '../img/weapon/UI_icon_status_sword.png';
+
 class App extends React.Component {
     constructor(props) {
         super(props);
@@ -246,11 +256,22 @@ class App extends React.Component {
                 "Ability", "1H Sword", "1H Rapier", "Shield",
                 "1H Club", "2H Axe", "2H Spear", "Bow", "1H Dagger"
             ];
+            const skillDarkImg = {
+                "Ability": abilityDark,
+                "1H Sword": swordDark,
+                "1H Rapier": rapierDark,
+                "Shield": shieldDark,
+                "1H Club": maceDark,
+                "2H Axe": axeDark,
+                "2H Spear": spearDark,
+                "Bow": bowDark,
+                "1H Dagger": daggerDark,
+            }
             var skillTypeRarityButtons = skillTypes.map((value) => {
                 var buttonClass = "filter-button" + (this.state.filters.skillType.includes(value) ? " active" : "");
                 return (
                     <label key={value} className={buttonClass}>
-                        {value}
+                        <img src={skillDarkImg[value]}></img>
                         <input
                             type="checkbox"
                             name="skillTypeFilter"

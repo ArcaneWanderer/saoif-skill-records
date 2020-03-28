@@ -16,7 +16,7 @@
     "sqlite3": "^4.1.0"
   },
   "scripts": {
-    "start": "node server.js > server.log 2>&1 &",
+    "start": "node server.js",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",

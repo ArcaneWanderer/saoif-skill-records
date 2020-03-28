@@ -64,7 +64,6 @@ class App extends React.Component {
                 characterList: [...characterList].sort(),
                 cardNameList: cardNameList
             }, () => {
-                console.log(this.state.cards);
             });
         }).catch((error => {
             console.log('Failed to initialize app.');

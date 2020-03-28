@@ -40,7 +40,9 @@ class App extends React.Component {
         let languageParam = this.props.match.params.language;
         let language = languageParam;
 
-        if (languageParam === 'ja') {
+        if (language === '' || language === undefined) {
+            language = 'en';
+        } else if (languageParam === 'ja') {
             language = 'jp';
         } else if (languageParam === 'cn' || languageParam === 'zh') {
             language = 'tw';

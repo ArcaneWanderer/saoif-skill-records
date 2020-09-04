@@ -1,1 +1,1 @@
-set DEBUG=express:* & nodemon server.js
+export DEBUG=express:* & npx nodemon server.js

@@ -1,7 +1,7 @@
 const sqlite3 = require('sqlite3').verbose();
 
 const JP_DATABASE = 'db/gamemaster.db3';
-const GLOBAL_DATABASE = 'db/gamemaster_fc.db3';
+const GLOBAL_DATABASE = 'db/gamemaster_fc.db3'; // eslint-disable-line
 const TEXT_DATABASE_JP = 'db/ja/textmaster.db3';
 const TEXT_DATABASE_EN = 'db/en/textmaster.db3';
 const TEXT_DATABASE_KO = 'db/ko/textmaster.db3';
@@ -236,7 +236,6 @@ class SkillRecordDatabase {
         let skillData = {};
         let buffData = {};
         let hasCharge = false;
-        let hasBurst = false;
     
         cardData = await this.getCardData(cardId);
     
@@ -246,7 +245,7 @@ class SkillRecordDatabase {
     
         skillData['base'] = await this.getSkillData(cardData.skill_masterid);
     
-        cardType = cardData.type == 1 ? 'active' : 'passive';
+        cardType = cardData.type === 1 ? 'active' : 'passive';
     
         return Promise.all([
             this.getTextData(cardData.text_name_id, language),
@@ -259,7 +258,7 @@ class SkillRecordDatabase {
             skillName = values[2];
             skillDescription = values[3];
     
-            if (cardType == 'active') {
+            if (cardType === 'active') {
                 buffData['base'] = await this.getActiveBuffs(skillData.base.skill_masterid);
                 let chargeSkillData = await this.getChargeSkillData(skillData.base.skill_masterid);
     

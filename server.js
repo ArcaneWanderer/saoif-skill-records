@@ -1,6 +1,5 @@
 const express = require('express');
 const path = require('path');
-const fetch = require('node-fetch');
 
 const app = express();
 
@@ -9,7 +8,6 @@ const srdb = new SkillRecordDatabase();
 
 const SERVER_HOST = process.env.OPENSHIFT_NODEJS_IP || '0.0.0.0';
 const SERVER_PORT = process.env.OPENSHIFT_NODEJS_PORT || process.env.I247_PORT || 8080;
-const SERVER_URL = SERVER_HOST + ':' + SERVER_PORT;
 
 app.use(express.static(path.join(__dirname, 'build')));
 

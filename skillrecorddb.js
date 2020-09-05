@@ -20,9 +20,9 @@ class SkillRecordDatabase {
     createConnection(databaseFile) {
         const db = new sqlite3.Database(databaseFile, (error) => {
             if (error) {
-            return console.error(error.message);
+                return console.error(error.message);
             }
-            console.log('Connected to the SQlite database.');
+            console.log('Connected to the database.');
         });
         return db;
     }
@@ -30,9 +30,41 @@ class SkillRecordDatabase {
     closeConnection() {
         this.db.close((error) => {
             if (error) {
-              return console.error(error.message);
+                return console.error(error.message);
             }
             console.log('Closed the database connection.');
+        });
+    }
+
+    querySingleResult(sql, errorMessage) {
+        return new Promise((resolve, reject) => {
+            this.db.get(sql, (error, row) => {
+                if (error) {
+                    console.log(errorMessage + ':', error);
+                    reject(error);
+                }
+
+                console.log(row);
+                resolve(row);
+            });
+        });
+    }
+
+    queryMultipleResult(sql, errorMessage) {
+        return new Promise((resolve, reject) => {
+            this.db.all(sql, (error, rows) => {
+                if (error) { 
+                    console.log(errorMessage + ":", error);
+                    reject();
+                }
+
+                let data = [];
+                rows.forEach((row) => {
+                    data.push(row);
+                });
+
+                resolve(data);
+            });
         });
     }
 
@@ -43,21 +75,7 @@ class SkillRecordDatabase {
                     ON text_name_id = id
                     WHERE data LIKE "[%" AND rarity = max_rarity`;
         
-        return new Promise((resolve, reject) => {
-            this.db.all(sql, (error, rows) => {
-                if (error) { 
-                    console.log('Error when retrieving card options:', error);
-                    reject();
-                }
-
-                let data = [];
-                rows.forEach((row) => {
-                    data.push(row);
-                });
-
-                resolve(data);
-            });
-        });
+        return this.queryMultipleResult(sql, 'Error when retrieving card options');
     }
 
     fetchCardData(language) {
@@ -67,161 +85,77 @@ class SkillRecordDatabase {
                     ON text_name_id = id
                     WHERE data LIKE "${language === 'en' ? '[' : '【'}%" AND rarity = max_rarity`;
     
-        return new Promise((resolve, reject) => {
-            this.db.all(sql, (error, rows) => {
-                if (error) { 
-                    console.log('Error when retrieving card options:', error);
-                    reject();
-                }
-    
-                let data = [];
-                rows.forEach((row) => {
-                    data.push(row);
-                });
-    
-                resolve(data);
-            });
-        });
+        return this.queryMultipleResult(sql, 'Error when retrieving card options');
     }
     
-    
-    async getCardData(cardId) {
+    getCardData(cardId) {
         const sql = `SELECT *
                     FROM MCardMasters
                     WHERE card_masterid = '${cardId}'`;
         
-        return new Promise((resolve, reject) => {
-            this.db.get(sql, (error, row) => {
-                if (error) {
-                    console.log('Error when retrieving card data:', error);
-                    reject(error);
-                } else {
-                    resolve(row);
-                }
-            });
-        });
+        return this.querySingleResult(sql, 'Error when retrieving card data');
     };
     
-    async getSkillData(skillId) {
+    getSkillData(skillId) {
         const sql = `SELECT *
                     FROM MSkillMasters
                     WHERE skill_masterid = '${skillId}'`;
         
-        return new Promise((resolve, reject) => {
-            this.db.get(sql, (error, row) => {
-                if (error) {
-                    console.log('Error when retrieving skill data:', error);
-                    reject(error);
-                } else {
-                    resolve(row);
-                }
-            });
-        });
+        return this.querySingleResult(sql, 'Error when retrieving skill data');
     }
     
-    async getPassiveBuffs(cardId) {
+    getPassiveBuffs(cardId) {
         const sql = `SELECT *
                     FROM (SELECT ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) row, *
                             FROM MCardPowerupMasters)
                     WHERE card_masterid = '${cardId}'`;
     
-        return new Promise((resolve, reject) => {
-            this.db.all(sql, (error, rows) => {
-                if (error) {
-                    console.log('Error when retrieving passive buffs data:', error);
-                    reject(error);
-                } else {
-                    let data = [];
-                    rows.forEach((row) => {
-                        data.push(row);
-                    });
-                    resolve(data);
-                }
-            });
-        });
+        return this.queryMultipleResult(sql, 'Error when retrieving passive buffs data');
     }
     
-    async getActiveBuffs(skillId) {
+    getActiveBuffs(skillId) {
         const sql = `SELECT *
                     FROM (SELECT ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) row, *
                             FROM MSkillBuffMasters)
                     WHERE skill_masterid = '${skillId}'`;
     
         let buffs = [];
-        return new Promise((resolve, reject) => {
-            this.db.all(sql, (error, rows) => {
-                if (error) {
-                    console.log('Error when retrieving active buffs data:', error);
-                    reject(error);
-                } else {
-                    let data = [];
-                    rows.forEach((row) => {
-                        data.push(row);
-                    });
-                    resolve(data);
-                }
-            });
-        }).then(async (data) => {
+        return this.queryMultipleResult(sql, 'Error when retrieving active buffs data')
+            .then(async (data) => {
             buffs = data;
     
             return Promise.all(buffs.map((buff) => {
                 let sql = `SELECT *
                         FROM MBuffPowerupMasters
                         WHERE buff_masterid = '${buff['buff_masterid']}'`;
-                        
-                return new Promise((resolve, reject) => {
-                    this.db.get(sql, (error, row) => {
-                        if (error) {
-                            console.log('Error when retrieving buff effect data:', error);
-                            reject(error);
-                        } else {
-                            resolve(row);
-                        }
-                    });
-                });
+
+                return this.querySingleResult(sql, 'Error when retrieving buff effect data');
             })).then((data) => {
                 for (let i = 0; i < buffs.length; i++) {
                     buffs[i]['buffEffect'] = data[i];
                 }
                 return buffs;
             }).catch((error) => {
+                console.log(error);
                 return null;
             });
         });
     }
     
-    async getChargeSkillData(skillId) {
+    getChargeSkillData(skillId) {
         const sql = `SELECT *
                     FROM MSkillChargeMasters
                     WHERE skill_masterid = '${skillId}'`;
     
-        return new Promise((resolve, reject) => {
-            this.db.get(sql, (error, row) => {
-                if (error) {
-                    console.log('Error when retrieving charge skill data:', error);
-                    reject(error);
-                } else {
-                    resolve(row);
-                }
-            });
-        });
+        return this.querySingleResult(sql, 'Error when retrieving charge skill data');
     }
     
-    async getTextData(textId, language) {
+    getTextData(textId, language) {
         let sql = `SELECT *
                     FROM textmaster_${language}.MTextMasters
                     WHERE id = '${textId}'`;
         
-        return new Promise((resolve, reject) => {
-            this.db.get(sql, (error, row) => {
-                if (error) {
-                    console.log('Error when retrieving text data:', error);
-                    reject(error);
-                } else {
-                    resolve(row.data);
-                }
-            });
-        });
+        return this.querySingleResult(sql, 'Error when retrieving text data');
     }
     
     async getSkillRecordData(cardId, language) {
@@ -253,10 +187,10 @@ class SkillRecordDatabase {
             this.getTextData(skillData.base.text_name_id, language),
             this.getTextData(skillData.base.text_comment_id, language)
         ]).then(async (values) => {
-            cardName = values[0];
-            cardDescription = values[1];
-            skillName = values[2];
-            skillDescription = values[3];
+            cardName = values[0].data;
+            cardDescription = values[1].data;
+            skillName = values[2].data;
+            skillDescription = values[3].data;
     
             if (cardType === 'active') {
                 buffData['base'] = await this.getActiveBuffs(skillData.base.skill_masterid);

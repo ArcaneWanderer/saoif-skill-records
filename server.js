@@ -26,7 +26,7 @@ app.get('/:language/card', (req, res) => {
     });
 });
 
-app.get('/:language/sr/', async (req, res) => {
+app.get('/:language/sr/', (req, res) => {
     const language = req.params.language;
     srdb.fetchCardData(language).then((data) => {
         return Promise.all(data.map((element) => {
@@ -41,7 +41,7 @@ app.get('/:language/sr/', async (req, res) => {
     });
 });
 
-app.get('/:language/sr/:cardId', async (req, res) => {
+app.get('/:language/sr/:cardId', (req, res) => {
     const cardId = req.params.cardId;
     const language = req.params.language;
     srdb.getSkillRecordData(cardId, language).then((data) => {

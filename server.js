@@ -18,10 +18,6 @@ app.get('/:language', (req, res) => {
 app.get('/:language/card', (req, res) => {
     const language = req.params.language;
     srdb.fetchCardOptions(language).then((data) => {
-        return Promise.all(data.map((element) => {
-            return srdb.getCardOptions(language);
-        }));
-    }).then((data) => {
         res.contentType('application/json');
         res.send(JSON.stringify(data));
     }).catch((error) => {

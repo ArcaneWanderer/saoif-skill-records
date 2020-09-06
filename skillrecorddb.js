@@ -44,7 +44,6 @@ class SkillRecordDatabase {
                     reject(error);
                 }
 
-                console.log(row);
                 resolve(row);
             });
         });

@@ -9,10 +9,10 @@ const srdb = new SkillRecordDatabase();
 const SERVER_HOST = process.env.OPENSHIFT_NODEJS_IP || '0.0.0.0';
 const SERVER_PORT = process.env.OPENSHIFT_NODEJS_PORT || process.env.I247_PORT || 8080;
 
-app.use(express.static(path.join(__dirname, 'build')));
+app.use(express.static(path.join(__dirname, 'public')));
 
 app.get('/:language', (req, res) => {
-    res.sendFile(path.join(__dirname, 'build', 'index.html'));
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 app.get('/:language/card', (req, res) => {

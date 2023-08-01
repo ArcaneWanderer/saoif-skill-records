@@ -1,0 +1,6 @@
+services:
+  web:
+    image: "saoif-sr:${TAG}"
+    ports:
+      - "8080:8080"
+    restart: on-failure

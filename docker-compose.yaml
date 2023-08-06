@@ -3,4 +3,6 @@ services:
     image: "saoif-sr:${TAG}"
     ports:
       - "8080:8080"
+    volumes:
+      - "${DB_PATH}:/usr/app/db"
     restart: on-failure
